@@ -6,7 +6,7 @@ if (!cached) {
 }
 
 export async function connectDb() {
-  const uri = process.env.MONGODB_URI;
+  const uri = "mongodb+srv://brandedcollectionrajkot2020_db_user:3BvilvpudgOXXClM@cluster0.hfqifsb.mongodb.net/Prod-Hostinger?appName=Cluster0"
 
   if (!uri) {
     throw new Error("❌ MONGODB_URI is missing");
