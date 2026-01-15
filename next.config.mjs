@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-
   images: {
-    unoptimized: true, // ✅ disables sharp usage
+    unoptimized: true, // 🔑 disables sharp completely
   },
-
   experimental: {
-    serverActions: true,
+    serverActions: {}, // FIXES your warning
   },
 };
 
