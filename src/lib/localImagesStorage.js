@@ -1,23 +1,45 @@
 import fs from "fs";
 import path from "path";
 
-const UPLOAD_DIR =
-  process.env.NODE_ENV === "production"
-    ? "/home/u699308042/domains/lightblue-newt-758999.hostingersite.com/nodeapp/uploads"
-    : path.join(process.cwd(), "uploads");
+/**
+ * This MUST point to nodeapp/public
+ * process.cwd() === /home/.../nodeapp
+ */
+const BASE_UPLOAD_DIR = path.join(
+  process.cwd(),
+  "public",
+  "uploads",
+  "products"
+);
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
 
 export async function saveImage({ buffer, productId, filename }) {
-  const dir = path.join(UPLOAD_DIR, productId);
-  fs.mkdirSync(dir, { recursive: true });
+  const productDir = path.join(BASE_UPLOAD_DIR, productId);
+  ensureDir(productDir);
 
-  const fullPath = path.join(dir, filename);
-  fs.writeFileSync(fullPath, buffer);
+  const filePath = path.join(productDir, filename);
+  await fs.promises.writeFile(filePath, buffer);
 
-  return `/uploads/${productId}/${filename}`;
+  // URL that browser can access
+  return `/uploads/products/${productId}/${filename}`;
+}
+
+export function deleteImage(relativePath) {
+  if (!relativePath) return;
+
+  const fullPath = path.join(process.cwd(), "public", relativePath);
+  if (fs.existsSync(fullPath)) {
+    fs.unlinkSync(fullPath);
+  }
 }
 
 export function deleteProductFolder(productId) {
-  const dir = path.join(UPLOAD_DIR, productId);
+  const dir = path.join(BASE_UPLOAD_DIR, productId);
   if (fs.existsSync(dir)) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
