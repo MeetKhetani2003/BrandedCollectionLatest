@@ -97,57 +97,61 @@ export async function GET(req) {
 
 /** ---------- CREATE PRODUCT ---------- */
 export async function POST(req) {
-  await connectDb();
-  const formData = await req.formData();
-  const productData = JSON.parse(formData.get("productData"));
+  try {
+    await connectDb();
+    const formData = await req.formData();
+    const productData = JSON.parse(formData.get("productData"));
 
-  // 1. Create empty product WITHOUT required image
-  const product = new Product(productData);
-  const productId = product._id.toString();
+    // 1. Create empty product WITHOUT required image
+    const product = new Product(productData);
+    const productId = product._id.toString();
 
-  // 2. Save front image
-  const frontFile = formData.get("imageFront");
-  if (!frontFile || frontFile.size === 0) {
-    return NextResponse.json(
-      { error: "Front image required" },
-      { status: 400 }
-    );
-  }
-
-  product.imageFrontPath = await saveImage({
-    buffer: Buffer.from(await frontFile.arrayBuffer()),
-    productId,
-    filename: "front.webp",
-  });
-
-  // 3. Save back image if exists
-  const backFile = formData.get("imageBack");
-  if (backFile && backFile.size > 0) {
-    product.imageBackPath = await saveImage({
-      buffer: Buffer.from(await backFile.arrayBuffer()),
-      productId,
-      filename: "back.webp",
-    });
-  }
-
-  // 4. Save gallery images
-  const galleryFiles = formData.getAll("galleryImages");
-  let index = 1;
-  product.gallery = [];
-  for (const file of galleryFiles) {
-    if (file.size > 0) {
-      const path = await saveImage({
-        buffer: Buffer.from(await file.arrayBuffer()),
-        productId,
-        filename: `gallery-${index++}.webp`,
-      });
-      product.gallery.push({ path });
+    // 2. Save front image
+    const frontFile = formData.get("imageFront");
+    if (!frontFile || frontFile.size === 0) {
+      return NextResponse.json(
+        { error: "Front image required" },
+        { status: 400 }
+      );
     }
+
+    product.imageFrontPath = await saveImage({
+      buffer: Buffer.from(await frontFile.arrayBuffer()),
+      productId,
+      filename: "front.webp",
+    });
+
+    // 3. Save back image if exists
+    const backFile = formData.get("imageBack");
+    if (backFile && backFile.size > 0) {
+      product.imageBackPath = await saveImage({
+        buffer: Buffer.from(await backFile.arrayBuffer()),
+        productId,
+        filename: "back.webp",
+      });
+    }
+
+    // 4. Save gallery images
+    const galleryFiles = formData.getAll("galleryImages");
+    let index = 1;
+    product.gallery = [];
+    for (const file of galleryFiles) {
+      if (file.size > 0) {
+        const path = await saveImage({
+          buffer: Buffer.from(await file.arrayBuffer()),
+          productId,
+          filename: `gallery-${index++}.webp`,
+        });
+        product.gallery.push({ path });
+      }
+    }
+
+    await product.save();
+
+    return NextResponse.json(product, { status: 201 });
+  } catch (error) {
+    console.log(error);
   }
-
-  await product.save();
-
-  return NextResponse.json(product, { status: 201 });
 }
 
 /* ---------------------------------- */
