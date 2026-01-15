@@ -1,17 +1,11 @@
 import fs from "fs";
 import path from "path";
 
-/**
- * process.cwd() === /home/.../nodeapp
- * Files go into: nodeapp/public/uploads/products
- * Public URL:     /public/uploads/products
- */
-const BASE_UPLOAD_DIR = path.join(
-  process.cwd(),
-  "public",
-  "uploads",
-  "products"
-);
+const BASE_UPLOAD_DIR = "/home/u699308042/domains/lightblue-newt-758999.hostingersite.com/nodeapp/public/uploads/products";
+
+if (!BASE_UPLOAD_DIR) {
+  throw new Error("UPLOAD_BASE_PATH env variable is missing");
+}
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -26,15 +20,19 @@ export async function saveImage({ buffer, productId, filename }) {
   const filePath = path.join(productDir, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // ✅ MUST match Hostinger public URL
+  // PUBLIC URL (browser-accessible)
   return `/public/uploads/products/${productId}/${filename}`;
 }
 
 export function deleteImage(relativePath) {
   if (!relativePath) return;
 
-  // relativePath already starts with /public/...
-  const fullPath = path.join(process.cwd(), relativePath);
+  // relativePath = /public/uploads/...
+  const fullPath = path.join(
+    BASE_UPLOAD_DIR,
+    relativePath.replace("/public/uploads/products/", "")
+  );
+
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);
   }
