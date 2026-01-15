@@ -1,10 +1,12 @@
 import fs from "fs";
 import path from "path";
-import sharp from "sharp";
 
 const BASE_DIR = path.join(process.cwd(), "public/uploads/products");
 
 export async function saveImage({ buffer, productId, filename }) {
+  // ✅ Lazy import sharp (CRITICAL FIX)
+  const sharp = (await import("sharp")).default;
+
   const dir = path.join(BASE_DIR, productId);
   fs.mkdirSync(dir, { recursive: true });
 
