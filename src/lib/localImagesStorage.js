@@ -6,13 +6,14 @@ const BASE_DIR = path.join(process.cwd(), "public/uploads/products");
 export async function saveImage({ buffer, productId, filename }) {
   const dir = path.join(BASE_DIR, productId);
 
+  // ensure directory exists
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
   const fullPath = path.join(dir, filename);
 
-  // Save file AS-IS (no resize, no compression)
+  // write file directly
   fs.writeFileSync(fullPath, buffer);
 
   return `/uploads/products/${productId}/${filename}`;
