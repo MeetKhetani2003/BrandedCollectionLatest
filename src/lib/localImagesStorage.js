@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 
 /**
- * This MUST point to nodeapp/public
  * process.cwd() === /home/.../nodeapp
+ * Files go into: nodeapp/public/uploads/products
+ * Public URL:     /public/uploads/products
  */
 const BASE_UPLOAD_DIR = path.join(
   process.cwd(),
@@ -25,14 +26,15 @@ export async function saveImage({ buffer, productId, filename }) {
   const filePath = path.join(productDir, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // URL that browser can access
-  return `/uploads/products/${productId}/${filename}`;
+  // ✅ MUST match Hostinger public URL
+  return `/public/uploads/products/${productId}/${filename}`;
 }
 
 export function deleteImage(relativePath) {
   if (!relativePath) return;
 
-  const fullPath = path.join(process.cwd(), "public", relativePath);
+  // relativePath already starts with /public/...
+  const fullPath = path.join(process.cwd(), relativePath);
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);
   }
