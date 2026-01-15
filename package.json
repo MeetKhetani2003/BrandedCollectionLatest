@@ -1,0 +1,51 @@
+{
+  "name": "ecommerce-prj",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p $PORT"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@pdf-lib/fontkit": "^1.1.1",
+    "@react-oauth/google": "^0.12.2",
+    "@vercel/blob": "^2.0.0",
+    "autoprefixer": "^10.4.20",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "cookies-next": "^6.1.1",
+    "fontkit": "^2.0.4",
+    "framer-motion": "^12.23.24",
+    "google-auth-library": "^10.5.0",
+    "googleapis": "^166.0.0",
+    "gsap": "^3.13.0",
+    "jsonwebtoken": "^9.0.3",
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.555.0",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.0",
+    "next": "16.0.7",
+    "nodemailer": "^7.0.11",
+    "pdf-lib": "^1.17.1",
+    "pdfmake": "^0.2.20",
+    "postcss": "^8.4.38",
+    "prop-types": "^15.8.1",
+    "razorpay": "^2.9.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
+    "react-infinite-scroll-component": "^6.1.0",
+    "sharp": "^0.34.5",
+    "slugify": "^1.6.6",
+    "swiper": "^12.0.3",
+    "tailwindcss": "^3.4.17",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "babel-plugin-react-compiler": "1.0.0"
+  }
+}
