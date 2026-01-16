@@ -38,18 +38,22 @@ export default function FeaturedProducts() {
   // 🔥 Fetch only featured products from backend
   const fetchFeatured = async () => {
     try {
-      const res = await fetch(`/api/products?featured=true`);
+      const res = await fetch("/api/products?featured=true", {
+        cache: "no-store",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch");
+
       const data = await res.json();
 
       if (data?.products?.length > 0) {
-        setProducts(data?.products?.filter((p) => p.featured));
-        console.log(data.products);
+        setProducts(data.products);
       } else {
         setProducts(dummyProducts);
       }
     } catch (err) {
       console.log("Featured Fetch Error:", err);
-      setProducts(dummyProducts); // fallback
+      setProducts(dummyProducts);
     } finally {
       setLoading(false);
     }
