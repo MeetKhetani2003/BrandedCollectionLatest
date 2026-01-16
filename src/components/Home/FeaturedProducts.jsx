@@ -41,8 +41,9 @@ export default function FeaturedProducts() {
       const res = await fetch(`/api/products?featured=true`);
       const data = await res.json();
 
-      if (data?.products.length > 0) {
-        setProducts(data.products.filter((p) => p.featured));
+      if (data?.products?.length > 0) {
+        setProducts(data?.products?.filter((p) => p.featured));
+        console.log(data.products);
       } else {
         setProducts(dummyProducts);
       }
