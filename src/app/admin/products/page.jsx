@@ -56,7 +56,28 @@ const CATEGORY_MAP = {
 };
 
 const SIZE_MAP = {
-  clothes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  clothes: [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "XXXL",
+    "4XL",
+    "5XL",
+    "28",
+    "30",
+    "32",
+    "34",
+    "36",
+    "38",
+    "40",
+    "42",
+    "44",
+    "46",
+    "48",
+  ],
   shoes: ["6", "7", "8", "9", "10", "11", "12"],
   accessories: ["General"],
 };
@@ -260,7 +281,7 @@ function CreateProduct({ productId, onSuccess }) {
           allowedSizes.map((s) => ({
             size: s,
             quantity: p.sizes?.find((x) => x.size === s)?.quantity || 0,
-          }))
+          })),
         );
 
         setFlags({
@@ -299,7 +320,7 @@ function CreateProduct({ productId, onSuccess }) {
 
       if (f.galleryImages?.files?.length) {
         [...f.galleryImages.files].forEach((img) =>
-          fd.append("galleryImages", img)
+          fd.append("galleryImages", img),
         );
       }
 
@@ -442,8 +463,8 @@ function CreateProduct({ productId, onSuccess }) {
                       prev.map((x) =>
                         x.size === s.size
                           ? { ...x, quantity: Number(e.target.value) }
-                          : x
-                      )
+                          : x,
+                      ),
                     )
                   }
                   className="w-full border px-2 py-1 rounded"
@@ -524,8 +545,8 @@ function CreateProduct({ productId, onSuccess }) {
             ? "Updating..."
             : "Creating..."
           : isEdit
-          ? "Update Product"
-          : "Create Product"}
+            ? "Update Product"
+            : "Create Product"}
       </button>
     </form>
   );
@@ -593,7 +614,7 @@ function FileInput({
         initialImages.map((img) => ({
           url: img.url,
           existing: true, // mark as existing image
-        }))
+        })),
       );
     }
   }, [initialImages]);
