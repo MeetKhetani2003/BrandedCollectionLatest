@@ -50,7 +50,7 @@ const navLinks = [
    MEGA MENU DATA (safe to edit titles)
 ------------------------- */
 const sidebarMegaData = {
-  Clothing: [
+  Clothes: [
     {
       title: "Shirts",
       subs: [
@@ -178,7 +178,7 @@ const NavBar = () => {
           user.firstName && user.lastName
             ? user.firstName + " " + user.lastName
             : user.username
-        }! 🎉`
+        }! 🎉`,
       );
       hasShownLoginToast.current = true;
     }
@@ -310,7 +310,7 @@ const NavBar = () => {
                     const label = typeof sub === "string" ? sub : sub.label;
 
                     const href = `/products?mainCategory=${link.name.toLowerCase()}&category=${encodeURIComponent(
-                      label
+                      label,
                     )}`;
 
                     return (

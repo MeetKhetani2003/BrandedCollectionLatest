@@ -2,8 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "react-hot-toast";
-import AppInitializer from "@/components/AppInitializer";
-import LayoutControl from "@/app/ClientChildren";
+
 import ClientBridge from "./ClientBridge";
 
 export const metadata = {

@@ -10,21 +10,33 @@ export const useAppStore = create((set, get) => ({
   cart: [],
   loadingWishlist: false,
   loadingCart: false,
+  user: null,
+  isAuthenticated: false,
 
   // ------------------ AUTH CHECK ------------------
-  isLoggedIn: async () => {
-    const res = await fetch("/api/user/profile", {
-      credentials: "include",
-    });
-    if (res.ok) {
-      return true;
+
+  initAuth: async () => {
+    try {
+      const res = await fetch("/api/user/profile", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+
+      const data = await res.json();
+      set({ user: data.user, isAuthenticated: true });
+    } catch {
+      set({ user: null, isAuthenticated: false });
     }
-    return false;
   },
 
   // ------------------ WISHLIST ------------------
   fetchWishlist: async () => {
-    if (!get().isLoggedIn()) return; // guest skip
+    if (!get().isAuthenticated) return;
+    // guest skip
 
     try {
       set({ loadingWishlist: true });
@@ -45,9 +57,7 @@ export const useAppStore = create((set, get) => ({
   },
 
   addToWishlist: async (product) => {
-    if (!get().isLoggedIn()) {
-      return toast.error("Login required to add wishlist ❤️");
-    }
+    if (!get().isAuthenticated) return;
 
     try {
       const exists = get().wishlist.some((p) => p._id === product._id);
@@ -70,7 +80,7 @@ export const useAppStore = create((set, get) => ({
   },
 
   removeFromWishlist: async (productId) => {
-    if (!get().isLoggedIn()) return;
+    if (!get().isAuthenticated) return;
 
     set({
       wishlist: get().wishlist.filter((i) => i._id !== productId),
@@ -86,7 +96,7 @@ export const useAppStore = create((set, get) => ({
 
   // ------------------ CART ------------------
   fetchCart: async () => {
-    if (!get().isLoggedIn()) {
+    if (!get().isAuthenticated) {
       set({ cart: [] });
       return;
     }
@@ -128,7 +138,7 @@ export const useAppStore = create((set, get) => ({
 
     try {
       const exists = get().cart.find(
-        (p) => p._id === product._id && p.selectedSize === product.selectedSize
+        (p) => p._id === product._id && p.selectedSize === product.selectedSize,
       );
 
       if (exists) {
@@ -136,7 +146,7 @@ export const useAppStore = create((set, get) => ({
           cart: get().cart.map((p) =>
             p._id === product._id && p.selectedSize === product.selectedSize
               ? { ...p, qty: p.qty + 1 }
-              : p
+              : p,
           ),
         });
       } else {
@@ -176,13 +186,13 @@ export const useAppStore = create((set, get) => ({
   },
 
   updateQty: async (productId, size, qty) => {
-    if (!get().isLoggedIn()) return;
+    if (!get().isAuthenticated) return;
 
     if (qty <= 0) return get().removeFromCart(productId, size);
 
     set({
       cart: get().cart.map((i) =>
-        i._id === productId && i.selectedSize === size ? { ...i, qty } : i
+        i._id === productId && i.selectedSize === size ? { ...i, qty } : i,
       ),
     });
 
@@ -197,11 +207,11 @@ export const useAppStore = create((set, get) => ({
   },
 
   removeFromCart: async (productId, size) => {
-    if (!get().isLoggedIn()) return;
+    if (!get().isAuthenticated) return;
 
     set({
       cart: get().cart.filter(
-        (i) => !(i._id === productId && i.selectedSize === size)
+        (i) => !(i._id === productId && i.selectedSize === size),
       ),
     });
 
