@@ -107,7 +107,6 @@ export async function POST(req) {
     const productId = product._id.toString();
 
     // 2. Save front image
-    // FRONT IMAGE
     const frontFile = formData.get("imageFront");
     if (!frontFile || frontFile.size === 0) {
       return NextResponse.json(
@@ -119,31 +118,30 @@ export async function POST(req) {
     product.imageFrontPath = await saveImage({
       buffer: Buffer.from(await frontFile.arrayBuffer()),
       productId,
-      originalName: frontFile.name, // ✅ ORIGINAL NAME
+      filename: "front.webp",
     });
 
-    // BACK IMAGE
+    // 3. Save back image if exists
     const backFile = formData.get("imageBack");
     if (backFile && backFile.size > 0) {
       product.imageBackPath = await saveImage({
         buffer: Buffer.from(await backFile.arrayBuffer()),
         productId,
-        originalName: backFile.name,
+        filename: "back.webp",
       });
     }
 
-    // GALLERY
+    // 4. Save gallery images
     const galleryFiles = formData.getAll("galleryImages");
+    let index = 1;
     product.gallery = [];
-
     for (const file of galleryFiles) {
       if (file.size > 0) {
         const path = await saveImage({
           buffer: Buffer.from(await file.arrayBuffer()),
           productId,
-          originalName: file.name,
+          filename: `gallery-${index++}.webp`,
         });
-
         product.gallery.push({ path });
       }
     }
@@ -186,6 +184,7 @@ export async function PUT(req) {
   /* ✅ STEP 2: UPDATE FIELDS */
   Object.assign(product, updates);
 
+  /* ---------- FRONT IMAGE ---------- */
   const frontFile = formData.get("imageFront");
   if (frontFile && frontFile.size > 0) {
     if (product.imageFrontPath) deleteImage(product.imageFrontPath);
@@ -193,11 +192,11 @@ export async function PUT(req) {
     product.imageFrontPath = await saveImage({
       buffer: Buffer.from(await frontFile.arrayBuffer()),
       productId,
-      originalName: frontFile.name,
+      filename: "front.webp",
     });
   }
 
-  // BACK IMAGE
+  /* ---------- BACK IMAGE ----------- */
   const backFile = formData.get("imageBack");
   if (backFile && backFile.size > 0) {
     if (product.imageBackPath) deleteImage(product.imageBackPath);
@@ -205,11 +204,11 @@ export async function PUT(req) {
     product.imageBackPath = await saveImage({
       buffer: Buffer.from(await backFile.arrayBuffer()),
       productId,
-      originalName: backFile.name,
+      filename: "back.webp",
     });
   }
 
-  // GALLERY
+  /* ---------- GALLERY -------------- */
   const galleryFiles = formData.getAll("galleryImages");
   if (galleryFiles.length > 0) {
     if (product.gallery?.length) {
@@ -217,15 +216,15 @@ export async function PUT(req) {
     }
 
     product.gallery = [];
+    let index = 1;
 
     for (const file of galleryFiles) {
       if (file.size > 0) {
         const path = await saveImage({
           buffer: Buffer.from(await file.arrayBuffer()),
           productId,
-          originalName: file.name,
+          filename: `gallery-${index++}.webp`,
         });
-
         product.gallery.push({ path });
       }
     }
