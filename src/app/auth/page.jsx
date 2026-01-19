@@ -21,7 +21,7 @@ const AuthPage = () => {
         ease: "sine.inOut",
         repeat: -1,
         yoyo: true,
-      }
+      },
     );
 
     // Tab switch animation with Timeline for fluidity
@@ -41,7 +41,7 @@ const AuthPage = () => {
           duration: 0.2,
           ease: "power2.inOut",
         },
-        "-=0.6"
+        "-=0.6",
       )
       .to(
         tabRef.current.children,
@@ -50,13 +50,13 @@ const AuthPage = () => {
           duration: 0.3,
           ease: "back.out(1.7)",
         },
-        "-=0.4"
+        "-=0.4",
       )
       .fromTo(
         formRef.current,
         { opacity: 0, x: activeTab === "login" ? -100 : 100, scale: 0.9 },
         { opacity: 1, x: 0, scale: 1, duration: 0.6, ease: "power2.out" },
-        "-=0.5"
+        "-=0.5",
       );
   }, [activeTab]);
 
