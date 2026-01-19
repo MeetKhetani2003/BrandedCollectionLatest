@@ -107,41 +107,43 @@ export async function POST(req) {
     const productId = product._id.toString();
 
     // 2. Save front image
+    // FRONT IMAGE
     const frontFile = formData.get("imageFront");
     if (!frontFile || frontFile.size === 0) {
       return NextResponse.json(
         { error: "Front image required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     product.imageFrontPath = await saveImage({
       buffer: Buffer.from(await frontFile.arrayBuffer()),
       productId,
-      filename: "front.webp",
+      originalName: frontFile.name, // ✅ ORIGINAL NAME
     });
 
-    // 3. Save back image if exists
+    // BACK IMAGE
     const backFile = formData.get("imageBack");
     if (backFile && backFile.size > 0) {
       product.imageBackPath = await saveImage({
         buffer: Buffer.from(await backFile.arrayBuffer()),
         productId,
-        filename: "back.webp",
+        originalName: backFile.name,
       });
     }
 
-    // 4. Save gallery images
+    // GALLERY
     const galleryFiles = formData.getAll("galleryImages");
-    let index = 1;
     product.gallery = [];
+
     for (const file of galleryFiles) {
       if (file.size > 0) {
         const path = await saveImage({
           buffer: Buffer.from(await file.arrayBuffer()),
           productId,
-          filename: `gallery-${index++}.webp`,
+          originalName: file.name,
         });
+
         product.gallery.push({ path });
       }
     }
@@ -168,7 +170,7 @@ export async function PUT(req) {
   if (!identifier) {
     return NextResponse.json(
       { error: "Product identifier missing" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -184,7 +186,6 @@ export async function PUT(req) {
   /* ✅ STEP 2: UPDATE FIELDS */
   Object.assign(product, updates);
 
-  /* ---------- FRONT IMAGE ---------- */
   const frontFile = formData.get("imageFront");
   if (frontFile && frontFile.size > 0) {
     if (product.imageFrontPath) deleteImage(product.imageFrontPath);
@@ -192,11 +193,11 @@ export async function PUT(req) {
     product.imageFrontPath = await saveImage({
       buffer: Buffer.from(await frontFile.arrayBuffer()),
       productId,
-      filename: "front.webp",
+      originalName: frontFile.name,
     });
   }
 
-  /* ---------- BACK IMAGE ----------- */
+  // BACK IMAGE
   const backFile = formData.get("imageBack");
   if (backFile && backFile.size > 0) {
     if (product.imageBackPath) deleteImage(product.imageBackPath);
@@ -204,11 +205,11 @@ export async function PUT(req) {
     product.imageBackPath = await saveImage({
       buffer: Buffer.from(await backFile.arrayBuffer()),
       productId,
-      filename: "back.webp",
+      originalName: backFile.name,
     });
   }
 
-  /* ---------- GALLERY -------------- */
+  // GALLERY
   const galleryFiles = formData.getAll("galleryImages");
   if (galleryFiles.length > 0) {
     if (product.gallery?.length) {
@@ -216,15 +217,15 @@ export async function PUT(req) {
     }
 
     product.gallery = [];
-    let index = 1;
 
     for (const file of galleryFiles) {
       if (file.size > 0) {
         const path = await saveImage({
           buffer: Buffer.from(await file.arrayBuffer()),
           productId,
-          filename: `gallery-${index++}.webp`,
+          originalName: file.name,
         });
+
         product.gallery.push({ path });
       }
     }
@@ -246,7 +247,7 @@ export async function DELETE(req) {
   if (!identifier) {
     return NextResponse.json(
       { error: "Product identifier missing" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
