@@ -70,6 +70,7 @@ export default function ProductCard({ product }) {
                 `/uploads/products/${product._id}/front.jpeg` ||
                 `/uploads/products/${product._id}/front.png` ||
                 `/uploads/products/${product._id}/front.jpg` ||
+                "/assets/Products/Product1.jpg" ||
                 product.imageFrontPath
               }
               alt={product.name}
@@ -88,6 +89,7 @@ export default function ProductCard({ product }) {
                 `/uploads/products/${product._id}/back.jpg` ||
                 `/uploads/products/${product._id}/back.png` ||
                 `/uploads/products/${product._id}/back.jpeg` ||
+                "/assets/Products/Product1Back.jpg" ||
                 product.imageBackPath
               }
               alt="back"
