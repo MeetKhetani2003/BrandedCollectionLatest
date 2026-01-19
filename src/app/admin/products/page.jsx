@@ -269,13 +269,20 @@ function CreateProduct({ productId, onSuccess }) {
         setCategory(p.category || "");
         setSubcategory(p.subcategory || "");
 
-        // ✅ THIS IS WHERE IT GOES
+        // ✅ FIX: Use imageFrontPath and imageBackPath instead of imageFront
         setExistingImages({
-          front: p.imageFront ? [{ url: p.imageFront }] : [],
-          back: p.imageBack ? [{ url: p.imageBack }] : [],
-          gallery: p.galleryUrls || [],
+          front: p.imageFrontPath
+            ? [{ url: p.imageFrontPath, existing: true }]
+            : [],
+          back: p.imageBackPath
+            ? [{ url: p.imageBackPath, existing: true }]
+            : [],
+          // If your gallery field in JSON is 'gallery', use that
+          gallery: (p.gallery || []).map((path) => ({
+            url: path,
+            existing: true,
+          })),
         });
-
         const allowedSizes = SIZE_MAP[p.mainCategory] || [];
         setSizes(
           allowedSizes.map((s) => ({
