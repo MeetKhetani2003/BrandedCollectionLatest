@@ -63,6 +63,7 @@ export default function ProductDetailsClient({ product }) {
     if (!isLoggedIn) return requireLogin();
     isWishlisted ? removeFromWishlist(product._id) : addToWishlist(product);
   };
+  console.log("Gallery is here :", gallery);
 
   /* ---------------- CART ---------------- */
   const addToCart = useCartStore((s) => s.addToCart);
