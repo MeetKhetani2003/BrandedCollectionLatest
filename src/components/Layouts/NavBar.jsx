@@ -117,6 +117,10 @@ const NavBar = () => {
   const pathname = usePathname();
   const isActive = (href) => pathname === href;
   const hasShownLoginToast = useRef(false);
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [navLoading, setNavLoading] = useState(false);
 
   const headerRef = useRef(null); // used to compute available space
   const [cartOpen, setCartOpen] = useState(false);
@@ -197,6 +201,29 @@ const NavBar = () => {
       window.removeEventListener("orientationchange", onResize);
     };
   }, [openMegaMenu]);
+  useEffect(() => {
+    if (search.trim().length < 2) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setNavLoading(true);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
+        const data = await res.json();
+        setResults(data.products || []);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setNavLoading(false);
+      }
+    }, 300); // debounce
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const toggleSidebar = () => {
     const s = !isSidebarOpen;
@@ -214,6 +241,15 @@ const NavBar = () => {
   const handleLinkClick = () => {
     setIsSidebarOpen(false);
     document.body.style.overflow = "auto";
+  };
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (!search.trim()) return;
+
+    router.push(`/products?search=${encodeURIComponent(search.trim())}`);
+
+    setSearch(""); // optional: clear input
   };
 
   /* -------------------------------------------------------------------
@@ -461,18 +497,91 @@ const NavBar = () => {
         {/* RIGHT */}
         <div className="flex items-center space-x-4">
           <div className="hidden sm:block">
-            <div className="relative">
+            <div className="relative hidden sm:block">
               <input
                 type="text"
-                placeholder="Search Men's..."
-                className={`w-48 lg:w-64 xl:w-80 h-10 border ${PALETTE.BORDER_ACCENT} rounded-full pl-4 pr-10 text-sm focus:ring-[#DEB887] focus:border-[#DEB887] ${PALETTE.BG_LIGHT}`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => results.length && setOpen(true)}
+                onBlur={() => setTimeout(() => setOpen(false), 150)}
+                placeholder="Search products..."
+                className={`w-48 lg:w-64 xl:w-80 h-10 border ${PALETTE.BORDER_ACCENT}
+      rounded-full pl-4 pr-10 text-sm ${PALETTE.BG_LIGHT}`}
               />
-              <button
-                className={`absolute right-0 top-0 mt-2 mr-3 text-gray-600 ${PALETTE.HOVER_ACCENT}`}
-                aria-label="Search"
-              >
-                <FiSearch className="w-5 h-5" />
-              </button>
+
+              <FiSearch className="absolute right-3 top-2.5 text-gray-600" />
+
+              {/* 🔽 SEARCH DROPDOWN */}
+              {open && (
+                <div className="absolute top-12 left-0 w-full z-50">
+                  <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.12)] overflow-hidden border border-gray-100">
+                    {/* LOADING */}
+                    {navLoading && (
+                      <div className="px-6 py-4 text-sm text-gray-500">
+                        Searching products…
+                      </div>
+                    )}
+
+                    {/* EMPTY */}
+                    {!navLoading && results.length === 0 && (
+                      <div className="px-6 py-6 text-sm text-gray-500 text-center">
+                        No products found
+                      </div>
+                    )}
+
+                    {/* RESULTS */}
+                    {!navLoading &&
+                      results.map((p) => (
+                        <Link
+                          key={p._id}
+                          href={`/products/${p.slug}`}
+                          onClick={() => {
+                            setSearch("");
+                            setOpen(false);
+                          }}
+                          className="group flex items-center gap-1 px-5 py-1 transition-all hover:bg-[#faf7f4]"
+                        >
+                          {/* IMAGE */}
+                          <div className="w-14 h-14 rounded-xl bg-[#f5f1ec] overflow-hidden flex-shrink-0">
+                            <Image
+                              src={
+                                p.imageFrontPath || "/assets/placeholder.jpg"
+                              }
+                              alt={p.name}
+                              width={56}
+                              height={56}
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+
+                          {/* TEXT */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {p.name}
+                            </p>
+
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {p.category}{" "}
+                              {p.subcategory && `• ${p.subcategory}`}
+                            </p>
+                          </div>
+
+                          {/* PRICE */}
+                          <div className="text-sm font-semibold text-[#654321]">
+                            ₹{p.price?.current}
+                          </div>
+                        </Link>
+                      ))}
+
+                    {/* FOOTER */}
+                    {!navLoading && results.length > 0 && (
+                      <div className="px-6 py-3 text-xs text-gray-500 bg-[#faf7f4]">
+                        Press Enter to view all results
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

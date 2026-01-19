@@ -45,6 +45,7 @@ export default function FeaturedProducts() {
       if (!res.ok) throw new Error("Failed to fetch");
 
       const data = await res.json();
+      console.log(data);
 
       if (data?.products?.length > 0) {
         setProducts(data.products);
