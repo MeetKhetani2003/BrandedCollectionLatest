@@ -7,7 +7,7 @@ if (!cached) {
 
 export async function connectDb() {
   const uri =
-    "mongodb+srv://meet:mvm@cluster0.5neuqfx.mongodb.net/dev-ecom-next?appName=Cluster0";
+    "mongodb+srv://brandedcollectionrajkot2020_db_user:3BvilvpudgOXXClM@cluster0.hfqifsb.mongodb.net/Prod-Hostinger?appName=Cluster0";
 
   if (!uri) {
     throw new Error("❌ MONGODB_URI is missing");
