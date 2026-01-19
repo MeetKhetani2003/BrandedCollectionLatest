@@ -153,80 +153,217 @@ export default function AdminProducts() {
 
 function ProductList({ onEdit }) {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: "createdAt",
+    direction: "desc",
+  });
   const [loadingId, setLoadingId] = useState(null);
 
   async function fetchProducts() {
-    const res = await fetch("/api/products");
+    const res = await fetch("/api/products?page=1&limit=1000000");
     const data = await res.json();
-    setProducts(Array.isArray(data) ? data : data.products || []);
+    const list = Array.isArray(data) ? data : data.products || [];
+    setProducts(list);
+    setFilteredProducts(list);
   }
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  async function handleDelete(productId) {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  // 🔍 Search and Filter Logic
+  useEffect(() => {
+    let result = products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.brand?.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
 
+    // ↕️ Sorting Logic
+    result.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      // Handle nested price sorting
+      if (sortConfig.key === "price") {
+        aValue = a.price?.current || 0;
+        bValue = b.price?.current || 0;
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredProducts(result);
+  }, [searchTerm, products, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = "desc";
+    if (sortConfig.key === key && sortConfig.direction === "desc") {
+      direction = "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  async function handleDelete(productId) {
+    if (!confirm("Are you sure? This cannot be undone.")) return;
     try {
       setLoadingId(productId);
-
       const res = await fetch(`/api/products?id=${productId}`, {
         method: "DELETE",
       });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || "Delete failed");
-
-      toast.success("Product deleted successfully");
-      fetchProducts(); // refresh list
+      if (!res.ok) throw new Error("Delete failed");
+      toast.success("Deleted");
+      fetchProducts();
     } catch (err) {
-      toast.error(err.message || "Failed to delete product");
+      toast.error(err.message);
     } finally {
       setLoadingId(null);
     }
   }
 
   return (
-    <div className="bg-white border border-[#ead7c5] rounded-xl overflow-hidden">
-      <div className="grid grid-cols-6 gap-4 px-4 py-3 bg-[#fdf7f2] text-sm font-medium">
-        <div>Product</div>
-        <div>Category</div>
-        <div>Price</div>
-        <div>Stock</div>
-        <div>Status</div>
-        <div className="text-right">Actions</div>
+    <div className="space-y-4">
+      {/* --- Advanced Toolbar --- */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-[#ead7c5]">
+        <div className="relative w-full md:w-96">
+          <input
+            type="text"
+            placeholder="Search by name, category, or brand..."
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#4a2e1f] outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+        </div>
+
+        <div className="text-sm text-gray-500">
+          Showing <b>{filteredProducts.length}</b> products
+        </div>
       </div>
 
-      {products.map((p) => (
-        <div
-          key={p._id}
-          className="grid grid-cols-6 gap-4 px-4 py-3 border-t text-sm items-center"
-        >
-          <div className="font-medium">{p.name}</div>
-          <div>{p.category}</div>
-          <div>₹{p.price?.current}</div>
-          <div>{p.sizes?.reduce((sum, s) => sum + s.quantity, 0) || 0}</div>
-          <div className="text-xs">
-            {p.isNewArrival && "New "}
-            {p.isBestseller && "Best "}
-            {p.featured && "Featured"}
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button onClick={() => onEdit(p.slug)}>Edit</button>
-
-            <button
-              onClick={() => handleDelete(p._id)}
-              disabled={loadingId === p._id}
-              className="text-red-600 underline disabled:opacity-50"
-            >
-              {loadingId === p._id ? "Deleting..." : "Delete"}
-            </button>
-          </div>
+      {/* --- Advanced Table --- */}
+      <div className="bg-white border border-[#ead7c5] rounded-xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-[#fdf7f2] text-[#4a2e1f] text-sm uppercase font-semibold">
+              <tr>
+                <th
+                  className="px-4 py-4 cursor-pointer hover:bg-[#f5e6d8]"
+                  onClick={() => requestSort("name")}
+                >
+                  Product{" "}
+                  {sortConfig.key === "name"
+                    ? sortConfig.direction === "asc"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </th>
+                <th className="px-4 py-4">Category</th>
+                <th
+                  className="px-4 py-4 cursor-pointer hover:bg-[#f5e6d8]"
+                  onClick={() => requestSort("price")}
+                >
+                  Price{" "}
+                  {sortConfig.key === "price"
+                    ? sortConfig.direction === "asc"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </th>
+                <th className="px-4 py-4">Stock</th>
+                <th
+                  className="px-4 py-4 cursor-pointer hover:bg-[#f5e6d8]"
+                  onClick={() => requestSort("createdAt")}
+                >
+                  Added On{" "}
+                  {sortConfig.key === "createdAt"
+                    ? sortConfig.direction === "asc"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </th>
+                <th className="px-4 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#ead7c5]">
+              {filteredProducts.map((p) => (
+                <tr key={p._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      {/* Small Preview Thumbnail */}
+                      <img
+                        src={p.imageFrontPath || "/placeholder.png"}
+                        className="w-10 h-10 rounded object-cover border"
+                        alt=""
+                      />
+                      <div>
+                        <div className="font-bold text-gray-800">{p.name}</div>
+                        <div className="text-xs text-gray-400">{p.brand}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="px-2 py-1 bg-[#ead7c5] text-[#4a2e1f] text-xs rounded-full">
+                      {p.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 font-medium text-green-700">
+                    ₹{p.price?.current}
+                  </td>
+                  <td className="px-4 py-4">
+                    {p.sizes?.reduce((sum, s) => sum + s.quantity, 0) > 0 ? (
+                      <span className="text-gray-700">
+                        {p.sizes?.reduce((sum, s) => sum + s.quantity, 0)}
+                      </span>
+                    ) : (
+                      <span className="text-red-500 font-bold">
+                        Out of Stock
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-500">
+                    {new Date(p.createdAt).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => onEdit(p.slug)}
+                        className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg"
+                        title="Edit"
+                      >
+                        📝
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p._id)}
+                        disabled={loadingId === p._id}
+                        className="p-2 hover:bg-red-50 text-red-600 rounded-lg disabled:opacity-50"
+                        title="Delete"
+                      >
+                        {loadingId === p._id ? "..." : "🗑️"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}
+
+        {filteredProducts.length === 0 && (
+          <div className="p-10 text-center text-gray-500">
+            No products found matching your search.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
