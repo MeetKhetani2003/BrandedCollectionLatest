@@ -10,7 +10,7 @@ import { useAppStore } from "../../store/useAppStore";
 import { useCartStore } from "../../store/useCartStore";
 import { useUserStore } from "../../store/useUserStore";
 
-// --- Skeleton Component ---
+/* ---------- Skeleton ---------- */
 const ProductSkeleton = () => (
   <div className="bg-[#FAF0E6] rounded-2xl shadow-md border border-[#DEB887] animate-pulse">
     <div className="h-80 w-full bg-gray-300 rounded-t-2xl" />
@@ -25,10 +25,17 @@ const ProductSkeleton = () => (
 );
 
 export default function ProductCard({ product }) {
+  if (!product) return null;
+
   const router = useRouter();
   const [hover, setHover] = useState(false);
   const [showSizeModal, setShowSizeModal] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false); // Track loading state
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  // ✅ SAFE image source (fallback always exists)
+  const [imageSrc, setImageSrc] = useState(
+    product.imageFrontPath || "/assets/Products/Product1.jpg",
+  );
 
   const { user } = useUserStore();
   const isLoggedIn = !!user?._id;
@@ -36,10 +43,9 @@ export default function ProductCard({ product }) {
   const wishlist = useAppStore((s) => s.wishlist);
   const addWishlist = useAppStore((s) => s.addToWishlist);
   const removeWishlist = useAppStore((s) => s.removeFromWishlist);
-  const isWishlisted = wishlist.some((i) => i._id === product?._id);
-  const addToCart = useCartStore((s) => s.addToCart);
+  const isWishlisted = wishlist.some((i) => i._id === product._id);
 
-  if (!product) return null;
+  const addToCart = useCartStore((s) => s.addToCart);
 
   const requireLogin = () => {
     toast.error("Login first to continue 🔐");
@@ -48,7 +54,6 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      {/* Show skeleton until the image is fully loaded */}
       {!isImageLoaded && <ProductSkeleton />}
 
       <div
@@ -58,50 +63,43 @@ export default function ProductCard({ product }) {
         }`}
         onClick={() => router.push(`/products/${product.slug}`)}
       >
+        {/* ---------- IMAGE ---------- */}
         <div
           className="relative h-80 w-full overflow-hidden rounded-t-2xl"
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
         >
-          {product.imageFrontPath && (
-            <Image
-              src={
-                `/uploads/products/${product._id}/front.webp` ||
-                `/uploads/products/${product._id}/front.jpeg` ||
-                `/uploads/products/${product._id}/front.png` ||
-                `/uploads/products/${product._id}/front.jpg` ||
-                "/assets/Products/Product1.jpg" ||
-                product.imageFrontPath
-              }
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 25vw"
-              className="object-cover"
-              priority
-              onLoad={() => setIsImageLoaded(true)} // Trigger when main image loads
-            />
-          )}
+          <Image
+            src={imageSrc}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 25vw"
+            className="object-cover"
+            priority
+            onLoad={() => setIsImageLoaded(true)}
+            onError={() => {
+              setImageSrc("/assets/Products/Product1.jpg");
+              setIsImageLoaded(true); // 🔑 Prevent infinite skeleton
+            }}
+          />
 
+          {/* ---------- BACK IMAGE (OPTIONAL) ---------- */}
           {product.imageBackPath && (
             <Image
-              src={
-                `/uploads/products/${product._id}/back.webp` ||
-                `/uploads/products/${product._id}/back.jpg` ||
-                `/uploads/products/${product._id}/back.png` ||
-                `/uploads/products/${product._id}/back.jpeg` ||
-                "/assets/Products/Product1Back.jpg" ||
-                product.imageBackPath
-              }
+              src={product.imageBackPath}
               alt="back"
               fill
               sizes="(max-width: 768px) 100vw, 25vw"
               className={`object-cover transition duration-300 ${
                 hover ? "opacity-100" : "opacity-0"
               }`}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
             />
           )}
 
-          {/* ❤️ Wishlist */}
+          {/* ---------- WISHLIST ---------- */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -111,13 +109,14 @@ export default function ProductCard({ product }) {
             className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md z-20 hover:bg-white"
           >
             <Heart
-              className={`w-5 h-5 transition-colors ${
+              className={`w-5 h-5 ${
                 isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
               }`}
             />
           </button>
         </div>
 
+        {/* ---------- DETAILS ---------- */}
         <div className="p-4">
           <h3 className="font-semibold text-lg truncate text-[#654321]">
             {product.name}
@@ -132,13 +131,14 @@ export default function ProductCard({ product }) {
               onClick={(e) => {
                 e.stopPropagation();
                 if (!isLoggedIn) return requireLogin();
+
                 if (product.mainCategory === "accessories") {
                   addToCart({ ...product, selectedSize: "General" });
                 } else {
                   setShowSizeModal(true);
                 }
               }}
-              className="px-4 py-2 rounded-full bg-[#654321] text-white text-sm hover:bg-[#4a3219] transition-colors"
+              className="px-4 py-2 rounded-full bg-[#654321] text-white text-sm hover:bg-[#4a3219]"
             >
               Add
             </button>
@@ -146,6 +146,7 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
+      {/* ---------- SIZE MODAL ---------- */}
       {showSizeModal && (
         <SelectSizeModal
           mainCategory={product.mainCategory}
