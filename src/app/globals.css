@@ -13,3 +13,24 @@ body {
 .featured-pagination .swiper-pagination-bullet-active {
   opacity: 1;
 }
+
+.premium-input {
+  @apply w-full rounded-xl border border-[#DEB887] px-4 py-3 text-sm
+  bg-white/90 focus:outline-none focus:ring-2 focus:ring-[#DEB887]
+  transition;
+}
+
+.editorial-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #654321;
+  background: transparent;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  color: #1f1f1f;
+}
+
+.editorial-input:focus {
+  outline: none;
+  border-color: #3e2a1c;
+}
