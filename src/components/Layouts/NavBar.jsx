@@ -593,12 +593,12 @@ const NavBar = () => {
               href="/profile"
               className="flex items-center text-[#654321] z-40 gap-2"
             >
-              <User className="w-6 h-6" />
-              {user.firstName && user.lastName ? (
+              <User className="w-6 h-6 text-[#fff] border rounded-full border-[#fff] bg-[#654321] " />
+              {/* {user.firstName && user.lastName ? (
                 <span>{user.firstName + " " + user.lastName}</span>
               ) : (
                 <span>{user.username}</span>
-              )}
+              )} */}
             </Link>
           ) : (
             <Link
@@ -606,8 +606,7 @@ const NavBar = () => {
               onClick={handleLinkClick}
               className="flex flex-col items-center"
             >
-              <User className="w-6 h-6 text-[#654321]" />
-              <span>Signup /Login</span>
+              <User className="w-6 h-6 text-[#654321] border rounded-full border-[#654321]" />
             </Link>
           )}
 

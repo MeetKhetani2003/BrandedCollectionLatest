@@ -2,9 +2,11 @@
 import { useUserStore } from "@/store/useUserStore";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function GoogleLoginButton({ onSuccess, onError, className }) {
+  const router = useRouter();
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       if (!credentialResponse?.credential) {
@@ -36,8 +38,9 @@ export default function GoogleLoginButton({ onSuccess, onError, className }) {
 
       if (res.ok) {
         await useUserStore.getState().getUser();
-        toast.success("Logged in successfully 🎉");
         onSuccess?.();
+        toast.success("Logged in successfully 🎉");
+        window.location.assign("/");
         // window.location.reload();
       }
     } catch (error) {

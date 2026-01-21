@@ -113,7 +113,7 @@ const SignupFormOrganism = ({ switchToLogin }) => {
       </div>
 
       <GoogleSignupButton
-        onSuccess={() => router.push("/")}
+        onSuccess={() => switchToLogin()}
         onError={(err) => toast.error(err)}
       />
       <p className="text-center text-sm text-[#654321]">
