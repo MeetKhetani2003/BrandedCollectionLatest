@@ -27,8 +27,8 @@ export default function ProductDetailsClient({ product }) {
   const router = useRouter();
 
   /* ---------------- IMAGES (FIXED) ---------------- */
-  const imgFront = product?.imageFrontPath || null;
-  const imgBack = product?.imageBackPath || null;
+  const imgFront = product?.imageFrontPath || "/assets/Products/Product1.jpg";
+  const imgBack = product?.imageBackPath || "/assets/Products/Product1.jpg";
 
   const gallery = useMemo(() => {
     const extra = product?.gallery?.map((g) => g.path) || [];
@@ -131,7 +131,7 @@ export default function ProductDetailsClient({ product }) {
               className="relative h-[650px] rounded-lg overflow-hidden"
             >
               <Image
-                src={img}
+                src={"/assets/Products/Product1.jpg"}
                 fill
                 alt={product.name}
                 className="object-cover"
@@ -141,28 +141,29 @@ export default function ProductDetailsClient({ product }) {
         </div>
 
         {/* Mobile Swiper */}
-        <div className="lg:hidden -mx-4">
-          {/* -mx-4 pulls it flush to the screen edges */}
-          <Swiper
-            modules={[Pagination]}
-            pagination={{ clickable: true }}
-            loop={gallery.length > 1}
-            className="aspect-[3/4] w-full" // Fixed aspect ratio for consistency
-          >
-            {gallery.map((img, i) => (
-              <SwiperSlide key={i}>
-                <div className="relative w-full h-full bg-gray-100">
-                  <Image
-                    src={img}
-                    fill
-                    alt={product.name}
-                    className="object-cover"
-                    priority={i === 0} // Load first image immediately
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+        <div className="lg:hidden -mx-4 overflow-hidden bg-white">
+          <div className="relative w-full aspect-[3/4] sm:aspect-square overflow-hidden">
+            <Swiper
+              modules={[Pagination]}
+              pagination={{ clickable: true }}
+              className="w-full h-full"
+            >
+              {gallery.map((img, i) => (
+                <SwiperSlide key={i}>
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={img}
+                      fill
+                      alt={product.name}
+                      className="object-cover"
+                      priority={i === 0}
+                      sizes="100vw"
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
         {/* RIGHT PANEL */}
         <div className="space-y-6 lg:sticky lg:top-10">
