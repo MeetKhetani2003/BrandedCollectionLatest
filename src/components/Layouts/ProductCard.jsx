@@ -51,6 +51,7 @@ export default function ProductCard({ product }) {
     toast.error("Login first to continue 🔐");
     router.push("/auth");
   };
+  console.log("Product", product);
 
   return (
     <>
@@ -103,13 +104,26 @@ export default function ProductCard({ product }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (!isLoggedIn) return requireLogin();
-              isWishlisted ? removeWishlist(product._id) : addWishlist(product);
+              e.preventDefault(); // Prevent any background navigation
+
+              if (!isLoggedIn) {
+                requireLogin();
+                return;
+              }
+
+              if (isWishlisted) {
+                removeWishlist(product._id);
+                toast.success("Removed from wishlist");
+              } else {
+                // Ensure you pass the whole product or the structure the store expects
+                addWishlist(product);
+                toast.success("Added to wishlist ❤️");
+              }
             }}
-            className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md z-20 hover:bg-white"
+            className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md z-30 hover:bg-white transition-colors"
           >
             <Heart
-              className={`w-5 h-5 ${
+              className={`w-5 h-5 transition-colors ${
                 isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
               }`}
             />
@@ -118,15 +132,21 @@ export default function ProductCard({ product }) {
 
         {/* ---------- DETAILS ---------- */}
         <div className="p-4">
-          <h3 className="font-semibold text-lg truncate text-[#654321]">
+          <h3 className="font-semibold text-md whitespace-pre-wrap lg:text-lg truncate text-[#654321]">
             {product.name}
           </h3>
 
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xl font-bold text-[#654321]">
-              ₹{product.price?.current}
-            </span>
-
+            <div className="flex flex-col gap-1">
+              {product.price?.old && (
+                <span className="text-xs text-gray-500 line-through">
+                  ₹{product.price.old}
+                </span>
+              )}
+              <span className="text-xl font-bold text-[#654321]">
+                ₹{product.price?.current}
+              </span>
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();

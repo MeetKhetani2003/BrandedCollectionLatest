@@ -43,6 +43,7 @@ export const useCartStore = create((set, get) => ({
     });
 
     const data = await res.json();
+    if (data.success) toast.success("Added to cart!");
     if (!data.success) return;
 
     await get().fetchCart();
