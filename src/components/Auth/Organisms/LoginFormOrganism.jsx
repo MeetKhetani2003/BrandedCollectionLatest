@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useUserStore } from "@/store/useUserStore";
 
-const LoginFormOrganism = () => {
+const LoginFormOrganism = ({ switchToSignup }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -99,12 +99,13 @@ const LoginFormOrganism = () => {
 
       <p className="text-center text-sm text-[#654321]">
         Don’t have an account?{" "}
-        <a
-          href="#"
-          className="text-[#DEB887] hover:text-[#654321] font-medium transition-colors duration-300"
+        <button
+          type="button" // Important: prevents form submission
+          onClick={switchToSignup}
+          className="text-[#DEB887] hover:text-[#654321] font-medium transition-colors duration-300 underline underline-offset-4"
         >
           Sign Up
-        </a>
+        </button>
       </p>
     </form>
   );

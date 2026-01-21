@@ -13,7 +13,8 @@ import ProductCard from "../Layouts/ProductCard";
 import { redirect, useRouter } from "next/navigation";
 import BuyNowCheckoutModal from "../Layouts/BuyNowCheckoutModal";
 import { useUserStore } from "@/store/useUserStore";
-
+import { Pagination } from "swiper/modules";
+import "swiper/css/pagination";
 const PALETTE = {
   BACKGROUND: "bg-[#fff9f4]",
   BORDER: "border-[#deb887]",
@@ -140,18 +141,29 @@ export default function ProductDetailsClient({ product }) {
         </div>
 
         {/* Mobile Swiper */}
-        <div className="lg:hidden">
-          <Swiper>
+        <div className="lg:hidden -mx-4">
+          {/* -mx-4 pulls it flush to the screen edges */}
+          <Swiper
+            modules={[Pagination]}
+            pagination={{ clickable: true }}
+            loop={gallery.length > 1}
+            className="aspect-[3/4] w-full" // Fixed aspect ratio for consistency
+          >
             {gallery.map((img, i) => (
               <SwiperSlide key={i}>
-                <div className="relative h-[420px]">
-                  <Image src={img} fill alt={product.name} />
+                <div className="relative w-full h-full bg-gray-100">
+                  <Image
+                    src={img}
+                    fill
+                    alt={product.name}
+                    className="object-cover"
+                    priority={i === 0} // Load first image immediately
+                  />
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
-
         {/* RIGHT PANEL */}
         <div className="space-y-6 lg:sticky lg:top-10">
           <h1 className={`text-3xl font-semibold ${PALETTE.TEXT}`}>

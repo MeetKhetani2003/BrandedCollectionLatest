@@ -5,7 +5,7 @@ import GoogleSignupButton from "@/components/authButtons/GoogleSignup";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-const SignupFormOrganism = () => {
+const SignupFormOrganism = ({ switchToLogin }) => {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -116,6 +116,16 @@ const SignupFormOrganism = () => {
         onSuccess={() => router.push("/")}
         onError={(err) => toast.error(err)}
       />
+      <p className="text-center text-sm text-[#654321]">
+        Already have an account?{" "}
+        <button
+          type="button"
+          onClick={switchToLogin}
+          className="text-[#DEB887] hover:text-[#654321] font-medium transition-colors duration-300 underline underline-offset-4"
+        >
+          Login
+        </button>
+      </p>
     </form>
   );
 };

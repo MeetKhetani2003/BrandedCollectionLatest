@@ -24,7 +24,7 @@ export default function HeroClient({ slides = [] }) {
         >
           {slides.map((slide, i) => (
             <SwiperSlide key={i}>
-              <div className="w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[520px]  overflow-hidden bg-[#f5f5f5] relative ">
+              <div className="w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] xl:h-[520px]  overflow-hidden bg-[#f5f5f5] relative ">
                 {slide.type === "image" && (
                   <img
                     src={slide.url}

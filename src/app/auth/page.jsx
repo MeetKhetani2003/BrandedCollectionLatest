@@ -92,12 +92,11 @@ const AuthPage = () => {
             Sign Up
           </button>
         </div>
-
         <div ref={formRef}>
           {activeTab === "login" ? (
-            <LoginFormOrganism />
+            <LoginFormOrganism switchToSignup={() => setActiveTab("signup")} />
           ) : (
-            <SignupFormOrganism />
+            <SignupFormOrganism switchToLogin={() => setActiveTab("login")} />
           )}
         </div>
       </div>

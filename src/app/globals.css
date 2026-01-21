@@ -34,3 +34,12 @@ body {
   outline: none;
   border-color: #3e2a1c;
 }
+/* Add this to your globals.css */
+.swiper-pagination-bullet-active {
+  background: #654321; /* Matches your PALETTE.ACCENT */
+}
+.swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  opacity: 0.5;
+}
