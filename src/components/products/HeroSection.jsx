@@ -10,7 +10,7 @@ export default function Hero({ slides = [] }) {
   if (!slides.length) return null;
 
   return (
-    <div className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] xl:h-[95vh] mt-4">
+    <div className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[60vh]  mt-4">
       <Swiper
         modules={[Autoplay, Pagination]}
         autoplay={{ delay: 3500 }}

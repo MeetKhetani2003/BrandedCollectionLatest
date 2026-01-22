@@ -7,9 +7,9 @@ const ContactMessageSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     reason: {
       type: String,
-      enum: ["product", "complaint", "other"],
-      required: true,
     },
+    state: { type: String, trim: true },
+    city: { type: String, trim: true },
     message: { type: String, required: true },
   },
   { timestamps: true },

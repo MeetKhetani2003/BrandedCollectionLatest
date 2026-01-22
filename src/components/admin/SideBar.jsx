@@ -9,6 +9,7 @@ const menu = [
   { name: "Users", href: "/admin/users" },
   { name: "Orders", href: "/admin/orders" },
   { name: "Coupons", href: "/admin/coupons" },
+  { name: "Inquiries", href: "/admin/inquiries" },
 ];
 
 export default function AdminSidebar() {

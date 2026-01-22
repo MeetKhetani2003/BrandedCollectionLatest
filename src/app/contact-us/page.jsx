@@ -23,15 +23,18 @@ const PALETTE = {
 };
 
 export default function ContactUs() {
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
-    reason: "",
+    reason: "", // Matches Schema Enum: "product", "complaint", "other"
+    state: "",
+    city: "",
     message: "",
   });
-  const containerRef = useRef(null);
 
+  const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -41,10 +44,37 @@ export default function ContactUs() {
 
   const submit = async (e) => {
     e.preventDefault();
-    toast.success("DATA_SENT_TO_CONCIERGE");
-    setForm({ name: "", email: "", phone: "", reason: "", message: "" });
-  };
+    setLoading(true);
 
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("DATA_SENT_TO_CONCIERGE");
+        setForm({
+          name: "",
+          email: "",
+          phone: "",
+          reason: "",
+          state: "",
+          city: "",
+          message: "",
+        });
+      } else {
+        toast.error(data.error || "TRANSMISSION_FAILED");
+      }
+    } catch (error) {
+      toast.error("CONNECTION_ERROR");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div
       ref={containerRef}
@@ -83,45 +113,47 @@ export default function ContactUs() {
         <div className="lg:w-[55%] px-8 md:px-20 py-24 bg-white rounded-t-[4rem] lg:rounded-none">
           <div className="max-w-xl mx-auto w-full">
             <h2 className="text-3xl font-bold tracking-tighter underline decoration-[#DEB887] decoration-2 underline-offset-8">
-              01/ CLIENT_PORTAL
+              CONTACT_US
             </h2>
-            <p className="mt-8 text-gray-400 italic font-light tracking-tight">
-              Initiate connection with our global concierge team.
-            </p>
 
             <form onSubmit={submit} className="mt-16 space-y-12">
+              {/* Row 1: Name & Email */}
               <div className="grid md:grid-cols-2 gap-10">
                 <FloatingMonoInput
-                  label="USER_FULL_NAME"
+                  label="NAME"
+                  required
                   value={form.name}
                   onChange={(v) => setForm({ ...form, name: v })}
                 />
                 <FloatingMonoInput
-                  label="EMAIL_ID_PRIMARY"
+                  required
+                  label="EMAIL_ID"
                   type="email"
                   value={form.email}
                   onChange={(v) => setForm({ ...form, email: v })}
                 />
               </div>
 
+              {/* Row 2: Phone & Reason */}
               <div className="grid md:grid-cols-2 gap-10">
                 <FloatingMonoInput
-                  label="TEL_DIAL_CODE"
+                  required
+                  label="MOBILE_NO"
                   value={form.phone}
                   onChange={(v) => setForm({ ...form, phone: v })}
                 />
                 <div className="relative group">
                   <select
-                    className={`w-full bg-transparent border-b ${PALETTE.BORDER} py-3 appearance-none focus:outline-none transition-all text-xs font-mono text-[#654321]`}
+                    className={`w-full bg-transparent border-b ${PALETTE.BORDER} py-3 appearance-none focus:outline-none transition-all text-[14px] font-mono text-[#654321]`}
                     value={form.reason}
                     onChange={(e) =>
                       setForm({ ...form, reason: e.target.value })
                     }
                   >
                     <option value="">INQUIRY_CATEGORY</option>
-                    <option value="fitting">FITTING_SESSION</option>
-                    <option value="bespoke">BESPOKE_REQUEST</option>
-                    <option value="logistic">ORDER_LOGISTICS</option>
+                    <option value="product">PRODUCT_INQUIRY</option>
+                    <option value="complaint">SERVICE_COMPLAINT</option>
+                    <option value="other">OTHER_SUPPORT</option>
                   </select>
                   <ChevronDown
                     className="absolute right-0 top-4 text-[#DEB887]"
@@ -130,46 +162,57 @@ export default function ContactUs() {
                 </div>
               </div>
 
-              <textarea
-                placeholder="MESSAGE_BODY"
-                rows={3}
-                className={`w-full bg-transparent border-b ${PALETTE.BORDER} py-3 focus:outline-none transition-all text-xs font-mono resize-none placeholder-[#DEB887]/60`}
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-              />
+              {/* Row 3: State & City (Added to match Mongoose Model) */}
+              <div className="grid md:grid-cols-2 gap-10">
+                <FloatingMonoInput
+                  label="STATE"
+                  value={form.state}
+                  onChange={(v) => setForm({ ...form, state: v })}
+                />
+                <FloatingMonoInput
+                  label="CITY"
+                  value={form.city}
+                  onChange={(v) => setForm({ ...form, city: v })}
+                />
+              </div>
+
+              {/* Row 4: Message Box */}
+              <div className="relative group min-h-[120px]">
+                <textarea
+                  placeholder=" "
+                  rows={4}
+                  value={form.message}
+                  onChange={(e) =>
+                    setForm({ ...form, message: e.target.value })
+                  }
+                  className="peer w-full bg-transparent border-b border-[#DEB887]/50 py-3 focus:outline-none focus:border-[#654321] transition-all text-[14px] font-mono text-[#654321] placeholder-transparent resize-none overflow-hidden"
+                />
+                <label className="absolute left-0 top-3 text-[14px] tracking-[0.2em] text-[#DEB887] pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[#654321] peer-[:not(:placeholder-shown)]:-top-6 uppercase">
+                  MESSAGE_TRANSMISSION
+                </label>
+              </div>
 
               <button
+                disabled={loading}
                 type="submit"
-                className={`group relative w-32 overflow-hidden border ${PALETTE.BORDER} py-2 transition-all duration-500 hover:border-[#654321]`}
+                className={`group relative w-full md:w-60 overflow-hidden border ${PALETTE.BORDER} py-4 transition-all duration-500 hover:border-[#654321] disabled:opacity-50`}
               >
-                {/* The "Fill" Animation Background */}
                 <div className="absolute inset-0 translate-y-full bg-[#654321] transition-transform duration-500 ease-out group-hover:translate-y-0" />
-
-                {/* Content Container */}
                 <div className="relative flex items-center justify-center gap-4">
                   <span
-                    className={`text-[11px] font-bold tracking-[0.4em] transition-colors duration-500 group-hover:text-white ${PALETTE.TEXT}`}
+                    className={`text-[14px] font-bold tracking-[0.4em] transition-colors duration-500 group-hover:text-white ${PALETTE.TEXT}`}
                   >
-                    SUBMIT
+                    {loading ? "SENDING..." : "SUBMIT_MESSAGE"}
                   </span>
-
-                  <div
-                    className={`flex items-center justify-center w-4 h-4 rounded-full border border-[#DEB887]/30 transition-all duration-500 group-hover:rotate-45 group-hover:border-white group-hover:bg-white/10`}
-                  >
-                    <ArrowRight
-                      size={16}
-                      className={`transition-colors duration-500 group-hover:text-white ${PALETTE.TEXT}`}
-                    />
-                  </div>
+                  <ArrowRight
+                    size={16}
+                    className={`transition-colors duration-500 group-hover:text-white ${PALETTE.TEXT}`}
+                  />
                 </div>
-
-                {/* Subtle "Scanning" Line for the Mono/Technical Vibe */}
-                <div className="absolute top-0 left-0 h-[1px] w-full bg-[#DEB887] opacity-0 group-hover:animate-scan group-hover:opacity-100" />
               </button>
             </form>
           </div>
         </div>
-
         {/* RIGHT: MAP (Monochrome) */}
         <div className="lg:w-[45%] relative min-h-[600px] lg:min-h-screen">
           <div className="absolute inset-0 grayscale contrast-[1.2] invert opacity-80">
@@ -218,7 +261,7 @@ export default function ContactUs() {
       </section>
 
       {/* ================= CONDENSED FAQ ================= */}
-      <section
+      {/* <section
         className={`py-20 px-8 ${PALETTE.BG} border-t border-[#DEB887]/20`}
       >
         <div className="max-w-4xl mx-auto">
@@ -259,29 +302,33 @@ export default function ContactUs() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
-
-function FloatingMonoInput({ label, type = "text", value, onChange }) {
+function FloatingMonoInput({
+  label,
+  type = "text",
+  value,
+  onChange,
+  required = false,
+}) {
   return (
     <div className="relative group">
       <input
         type={type}
-        required
+        required={required}
         placeholder=" "
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`peer w-full bg-transparent border-b ${PALETTE.BORDER} py-3 focus:outline-none focus:border-[#654321] transition-all text-xs font-mono text-[#654321] placeholder-transparent`}
+        className="peer w-full bg-transparent border-b border-[#DEB887]/50 py-3 focus:outline-none focus:border-[#654321] transition-all text-[14px] font-mono text-[#654321] placeholder-transparent"
       />
-      <label className="absolute left-0 top-3 text-[9px] tracking-[0.2em] text-[#DEB887] pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[#654321] peer-[:not(:placeholder-shown)]:-top-6 uppercase">
-        {label}
+      <label className="absolute left-0 top-3 text-[14px] tracking-[0.2em] text-[#DEB887] pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[#654321] peer-[:not(:placeholder-shown)]:-top-6 uppercase">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
     </div>
   );
 }
-
 const FAQ_DATA = [
   {
     q: "SHIPPING_PROTOCOL",
