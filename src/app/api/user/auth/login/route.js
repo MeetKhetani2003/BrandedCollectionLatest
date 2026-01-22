@@ -23,7 +23,7 @@ export async function POST(req) {
     if (!user) {
       return NextResponse.json(
         { message: "Account not found. Please sign up first." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -34,7 +34,7 @@ export async function POST(req) {
           message:
             "This account uses a password. Login using email & password.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(req) {
           message:
             "This account was created using Google login. Continue with Google.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -55,7 +55,7 @@ export async function POST(req) {
       if (!valid)
         return NextResponse.json(
           { message: "Wrong password" },
-          { status: 401 }
+          { status: 401 },
         );
       return createSession(user);
     }
@@ -67,7 +67,7 @@ export async function POST(req) {
 
     return NextResponse.json(
       { message: "Invalid login attempt" },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (err) {
     console.error("LOGIN ERROR:", err);
@@ -78,8 +78,8 @@ export async function POST(req) {
 function createSession(user) {
   const token = jwt.sign(
     { userId: user._id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    process.env.JWT_SECRET || "MyDevelopement",
+    { expiresIn: "7d" },
   );
 
   const response = NextResponse.json({
