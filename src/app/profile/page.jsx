@@ -88,13 +88,13 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className={`${PALETTE.BG} min-h-screen text-[#4a2e1f]`}>
-      <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className={`${PALETTE.BG} min-h-fit mt-20 text-[#4a2e1f]`}>
+      <div className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex flex-col md:flex-row gap-8">
           {/* LEFT SIDEBAR (Sticky on Desktop, Top on Mobile) */}
-          <aside className="md:w-1/4 space-y-4">
+          <aside className="md:w-1/4 h-fit md:sticky top-28 self-start">
             <div
-              className={`${PALETTE.CARD} p-6 rounded-xl border ${PALETTE.BORDER} shadow-sm`}
+              className={`${PALETTE.CARD}  p-6 rounded-xl border ${PALETTE.BORDER} shadow-sm`}
             >
               <div className="mb-6">
                 <p className="font-bold text-lg truncate uppercase tracking-tighter">
@@ -133,7 +133,7 @@ export default function ProfilePage() {
           </aside>
 
           {/* RIGHT CONTENT AREA */}
-          <main className="flex-1 min-h-[60vh]">
+          <main className="flex-1 h-fit">
             {activeTab === "profile" && (
               <ProfileTab user={user} setUser={setUser} palette={PALETTE} />
             )}
