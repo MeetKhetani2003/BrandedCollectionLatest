@@ -103,8 +103,8 @@ export default function ProductCard({ product }) {
           {/* ---------- WISHLIST ---------- */}
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault(); // Prevent any background navigation
+              e.preventDefault();
+              e.stopPropagation(); // 🔑 Stop the click from reaching the Card's onClick
 
               if (!isLoggedIn) {
                 requireLogin();
@@ -113,14 +113,12 @@ export default function ProductCard({ product }) {
 
               if (isWishlisted) {
                 removeWishlist(product._id);
-                toast.success("Removed from wishlist");
               } else {
-                // Ensure you pass the whole product or the structure the store expects
+                // Ensure the store receives the exact product object
                 addWishlist(product);
-                toast.success("Added to wishlist ❤️");
               }
             }}
-            className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md z-30 hover:bg-white transition-colors"
+            className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md z-30 hover:bg-white transition-all active:scale-90"
           >
             <Heart
               className={`w-5 h-5 transition-colors ${

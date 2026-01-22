@@ -27,6 +27,7 @@ export default function WishlistPage() {
   useEffect(() => {
     fetchWishlist();
   }, []);
+  console.log(wishlist);
 
   return (
     <div className={`min-h-screen ${PALETTE.BG}`}>

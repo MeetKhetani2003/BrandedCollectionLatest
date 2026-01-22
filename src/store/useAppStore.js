@@ -35,47 +35,63 @@ export const useAppStore = create((set, get) => ({
 
   // ------------------ WISHLIST ------------------
   fetchWishlist: async () => {
-    if (!get().isAuthenticated) return;
-    // guest skip
+    // 1. If we don't know the user yet, wait for initAuth to finish
+    if (get().user === null) {
+      await get().initAuth();
+    }
+
+    // 2. Now check if the user is actually logged in
+    if (!get().isAuthenticated) {
+      set({ wishlist: [] });
+      return;
+    }
 
     try {
       set({ loadingWishlist: true });
-
-      const res = await fetch("/api/wishlist", {
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error();
-
+      // Use the relative path, credentials include is essential for cookies
+      const res = await fetch("/api/wishlist", { credentials: "include" });
       const data = await res.json();
-      set({ wishlist: data.wishlist || [] });
+
+      // MATCH THE API RESPONSE STRUCTURE
+      if (data.status === "success") {
+        set({ wishlist: data.wishlist || [] });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Wishlist sync error:", err);
     } finally {
       set({ loadingWishlist: false });
     }
   },
-
   addToWishlist: async (product) => {
-    if (!get().isAuthenticated) return;
+    // Use useUserStore state if this store's auth isn't initialized
+    const authStatus = get().isAuthenticated;
+
+    if (!authStatus) {
+      // Attempt to sync auth before failing
+      await get().initAuth();
+    }
 
     try {
-      const exists = get().wishlist.some((p) => p._id === product._id);
-      if (exists) return toast("⚠ Already in wishlist");
+      // Optimistic UI update
+      set((state) => ({ wishlist: [...state.wishlist, product] }));
 
-      set({ wishlist: [...get().wishlist, product] });
-
-      await fetch("/api/wishlist", {
+      const res = await fetch("/api/wishlist", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId: product._id }),
       });
 
+      if (!res.ok) throw new Error();
+
+      // Refresh from server to ensure IDs and data are perfect
       await get().fetchWishlist();
-      toast.success("❤️ Added to wishlist");
-    } catch {
-      toast.error("Error updating wishlist");
+      toast.success("Added to wishlist ❤️");
+    } catch (err) {
+      // Rollback UI on failure
+      set((state) => ({
+        wishlist: state.wishlist.filter((p) => p._id !== product._id),
+      }));
+      toast.error("Failed to update wishlist");
     }
   },
 
