@@ -41,7 +41,7 @@ const LoginFormOrganism = ({ switchToSignup }) => {
         await getUser();
 
         router.push("/");
-        window.location.reload();
+        window.location.assign("/");
       }
     } catch {
       toast.error("Something went wrong. Try again.");

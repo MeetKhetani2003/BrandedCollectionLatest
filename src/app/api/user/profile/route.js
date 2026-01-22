@@ -49,7 +49,10 @@ export async function PATCH(req) {
       return NextResponse.json({ success: false, message: "Unauthorized" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "MyDevelopement",
+    );
     const body = await req.json();
 
     // ✅ FIX: Use $set with the entire body.
