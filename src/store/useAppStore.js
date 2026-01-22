@@ -48,11 +48,9 @@ export const useAppStore = create((set, get) => ({
 
     try {
       set({ loadingWishlist: true });
-      // Use the relative path, credentials include is essential for cookies
       const res = await fetch("/api/wishlist", { credentials: "include" });
       const data = await res.json();
 
-      // MATCH THE API RESPONSE STRUCTURE
       if (data.status === "success") {
         set({ wishlist: data.wishlist || [] });
       }

@@ -131,7 +131,7 @@ export default function ProductDetailsClient({ product }) {
               className="relative h-[650px] rounded-lg overflow-hidden"
             >
               <Image
-                src={"/assets/Products/Product1.jpg"}
+                src={img}
                 fill
                 alt={product.name}
                 className="object-cover"
