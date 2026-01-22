@@ -44,25 +44,28 @@ export async function PATCH(req) {
 
     const cookieStore = await cookies();
     const token = cookieStore.get("auth")?.value;
-    console.log("------------------------");
 
     if (!token) {
       return NextResponse.json({ success: false, message: "Unauthorized" });
     }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const body = await req.json(); // expects { addresses, defaultAddress }
-    console.log(
-      "========================================================",
-      body
-    );
+    const body = await req.json();
 
-    await User.findByIdAndUpdate(decoded.userId, {
-      addresses: body.addresses,
-      defaultAddress: body.defaultAddress,
+    // ✅ FIX: Use $set with the entire body.
+    // This will update firstName, lastName, OR addresses depending on what was sent.
+    const updatedUser = await User.findByIdAndUpdate(
+      decoded.userId,
+      { $set: body },
+      { new: true, runValidators: true }, // 'new: true' returns the updated document
+    ).select("-password");
+
+    return NextResponse.json({
+      success: true,
+      user: updatedUser, // Send the updated user back to the frontend
     });
-
-    return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Update Error:", error);
     return NextResponse.json({ success: false, error: error.message });
   }
 }
