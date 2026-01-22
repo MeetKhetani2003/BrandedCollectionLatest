@@ -13,7 +13,10 @@ export async function GET() {
     const token = cookieStore.get("auth")?.value;
     if (!token) return NextResponse.json({ success: false, user: null });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "MyDevelopement",
+    );
 
     const user = await User.findById(decoded.userId)
       .select("-password")
