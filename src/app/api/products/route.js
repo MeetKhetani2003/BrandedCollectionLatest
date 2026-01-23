@@ -101,6 +101,7 @@ export async function POST(req) {
     await connectDb();
     const formData = await req.formData();
     const productData = JSON.parse(formData.get("productData"));
+    console.log(productData);
 
     // 1. Create empty product WITHOUT required image
     const product = new Product(productData);

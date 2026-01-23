@@ -10,7 +10,7 @@ const PriceSchema = new Schema(
     old: Number,
     discountText: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 /** ---------- SPECIFICATIONS ---------- */
@@ -19,7 +19,7 @@ const SpecificationSchema = new Schema(
     key: { type: String, required: true },
     value: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 /** ---------- GALLERY ---------- */
@@ -27,7 +27,7 @@ const GalleryImageSchema = new Schema(
   {
     path: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 /** ---------- SIZE + STOCK ---------- */
@@ -36,7 +36,7 @@ const SizeStockSchema = new Schema(
     size: { type: String, required: true },
     quantity: { type: Number, required: true, min: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 /** ---------- PRODUCT ---------- */
@@ -82,7 +82,7 @@ const ProductSchema = new Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 /** ---------- VIRTUALS ---------- */
@@ -99,22 +99,38 @@ ProductSchema.virtual("galleryUrls").get(function () {
 });
 
 /** ---------- SLUG ---------- */
+/** ---------- PRE-SAVE HOOK ---------- */
 ProductSchema.pre("save", async function () {
-  if (!this.isModified("name")) return;
-
-  if (this.mainCategory === "accessories") {
-    this.sizes = [];
+  // Use 'this' directly
+  if (this.mainCategory === "accessories" && this.sizes) {
+    this.sizes = this.sizes.filter(
+      (s) => s.size === "General" || s.size === "one-size",
+    );
   }
 
-  const baseSlug = slugify(this.name, { lower: true, strict: true });
-  let slug = baseSlug;
-  let i = 1;
+  // Slug logic
+  if (this.isNew || this.isModified("name")) {
+    if (!this.name) throw new Error("Product name is required");
 
-  while (await mongoose.models.Product.findOne({ slug })) {
-    slug = `${baseSlug}-${i++}`;
+    const baseSlug = slugify(this.name.trim(), {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Use the model name strictly as defined
+    const ProductModel =
+      mongoose.models.Product || mongoose.model("Product", ProductSchema);
+
+    while (await ProductModel.exists({ slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter++}`;
+    }
+    this.slug = slug;
   }
-
-  this.slug = slug;
+  // NOTE: In async hooks, you don't need to call next()
 });
 
 export default mongoose.models.Product ||
