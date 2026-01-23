@@ -52,10 +52,10 @@ const CATEGORY_MAP = {
     "Perfume / Deo": ["Replica", "Indian Made", "Premium Collection"],
     Deodorants: ["Gas Deo", "Water Deo"],
     Watches: ["Analog", "Battery", "Automatic"],
-    Googles: [],
-    Wallets: [],
-    Belts: [],
-    Caps: [],
+    Googles: ["Men's Googles", "Women's Googles"],
+    Wallets: ["Wallets", "Purses"],
+    Belts: ["Men's Belts", "Women's Belts"],
+    Caps: ["Caps", "Hats"],
   },
 };
 
