@@ -58,6 +58,7 @@ const CATEGORY_MAP = {
     Wallets: ["Wallets", "Purses"],
     Belts: ["Men's Belts", "Women's Belts"],
     Caps: ["Caps", "Hats"],
+    Gadgets: ["Smart Watches", "Airpods", "Drone", "Headphones"],
   },
 };
 

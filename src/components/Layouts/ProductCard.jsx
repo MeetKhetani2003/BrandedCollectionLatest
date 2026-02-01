@@ -59,7 +59,7 @@ export default function ProductCard({ product }) {
 
       <div
         className={`bg-[#FAF0E6] rounded-2xl shadow-md border border-[#DEB887]
-        transition-all hover:shadow-xl hover:scale-[1.01] cursor-pointer ${
+        transition-all hover:shadow-xl hover:scale-[1.01] flex-col h-full cursor-pointer ${
           isImageLoaded ? "block" : "hidden"
         }`}
         onClick={() => router.push(`/products/${product.slug}`)}
@@ -129,12 +129,12 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* ---------- DETAILS ---------- */}
-        <div className="p-4">
-          <h3 className="font-semibold text-md whitespace-pre-wrap lg:text-lg truncate text-[#654321]">
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="font-semibold text-md lg:text-lg text-[#654321] line-clamp-2 min-h-[3rem] lg:min-h-[3.5rem] leading-tight">
             {product.name}
           </h3>
 
-          <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col gap-1">
               {product.price?.old && (
                 <span className="text-xs text-gray-500 line-through">

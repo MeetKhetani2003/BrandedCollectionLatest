@@ -92,10 +92,13 @@ export default function FeaturedProducts() {
           autoplay={{ delay: 3500, disableOnInteraction: false }}
           loop
           pagination={{
-            el: ".featured-pagination",
+            // el: ".featured-pagination",
             clickable: true,
-            dynamicBullets: true,
+            dynamicBullets: true, // 👈 Limits visible dots and adds scaling effect
+            dynamicMainBullets: 1,
           }}
+          className=" pt-6"
+          navigation={true}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
           breakpoints={{
             0: { slidesPerView: 1 },
@@ -106,14 +109,14 @@ export default function FeaturedProducts() {
           spaceBetween={24}
         >
           {products.map((item) => (
-            <SwiperSlide key={item._id}>
+            <SwiperSlide key={item._id} className="my-8">
               <ProductCard product={item} />
             </SwiperSlide>
           ))}
         </Swiper>
 
         {/* ✅ Pagination OUTSIDE cards */}
-        <div className="featured-pagination flex justify-center mt-6" />
+        {/* <div className="featured-pagination flex justify-center mt-6" /> */}
       </div>
     </section>
   );
