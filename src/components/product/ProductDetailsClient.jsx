@@ -211,7 +211,7 @@ export default function ProductDetailsClient({ product }) {
               {hasDiscount && (
                 <>
                   <p className="text-lg text-gray-400 line-through">
-                    ₹{oldPrice}
+                    {oldPrice > 0 ? `₹${oldPrice}` : null}
                   </p>
                   <span className="text-sm font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded">
                     {discountPercent}% OFF

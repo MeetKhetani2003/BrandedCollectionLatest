@@ -136,7 +136,7 @@ export default function ProductCard({ product }) {
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col gap-1">
-              {product.price?.old && (
+              {product.price?.old > 0 && (
                 <span className="text-xs text-gray-500 line-through">
                   ₹{product.price.old}
                 </span>
