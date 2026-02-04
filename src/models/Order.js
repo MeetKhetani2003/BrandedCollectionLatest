@@ -2,14 +2,12 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    // ONLINE USER (optional)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: false,
     },
 
-    // OFFLINE CUSTOMER
     customerName: {
       type: String,
       trim: true,
@@ -19,7 +17,6 @@ const orderSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-
     items: [
       {
         product: {
@@ -38,7 +35,7 @@ const orderSchema = new mongoose.Schema(
     paymentId: String,
     status: { type: String, default: "paid" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.models.Order || mongoose.model("Order", orderSchema);

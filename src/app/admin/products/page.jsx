@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -102,8 +103,25 @@ const TABS = {
 /* --------------------------------- */
 
 export default function AdminProducts() {
-  const [activeTab, setActiveTab] = useState(TABS.LIST);
-  const [editProductId, setEditProductId] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // ✅ Get state from URL instead of local useState
+  const activeTab = searchParams.get("tab") || TABS.LIST;
+  const editProductId = searchParams.get("id");
+
+  // ✅ Fix 1: Scroll to top whenever tab or product ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab, editProductId]);
+
+  // ✅ Fix 2: Navigation function that creates browser history
+  const handleTabChange = (tab, id = null) => {
+    const params = new URLSearchParams();
+    params.set("tab", tab);
+    if (id) params.set("id", id);
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -112,46 +130,32 @@ export default function AdminProducts() {
       <div className="flex gap-3 border-b border-[#ead7c5]">
         <Tab
           active={activeTab === TABS.LIST}
-          onClick={() => setActiveTab(TABS.LIST)}
+          onClick={() => handleTabChange(TABS.LIST)}
         >
           Product Listing
         </Tab>
-
         <Tab
           active={activeTab === TABS.CREATE}
-          onClick={() => {
-            setEditProductId(null);
-            setActiveTab(TABS.CREATE);
-          }}
+          onClick={() => handleTabChange(TABS.CREATE)}
         >
           Create Product
         </Tab>
-
         {activeTab === TABS.EDIT && <Tab active>Edit Product</Tab>}
       </div>
 
       {activeTab === TABS.LIST && (
-        <ProductList
-          onEdit={(id) => {
-            setEditProductId(id);
-            setActiveTab(TABS.EDIT);
-          }}
-        />
+        <ProductList onEdit={(slug) => handleTabChange(TABS.EDIT, slug)} />
       )}
 
       {(activeTab === TABS.CREATE || activeTab === TABS.EDIT) && (
         <CreateProduct
           productId={editProductId}
-          onSuccess={() => {
-            setEditProductId(null);
-            setActiveTab(TABS.LIST);
-          }}
+          onSuccess={() => handleTabChange(TABS.LIST)}
         />
       )}
     </div>
   );
 }
-
 /* --------------------------------- */
 /* -------- PRODUCT LIST ------------ */
 /* --------------------------------- */
@@ -298,13 +302,14 @@ function ProductList({ onEdit }) {
             <tbody className="divide-y divide-[#ead7c5]">
               {filteredProducts.map((p) => (
                 <tr key={p._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4">
+                  <td
+                    onClick={() => onEdit(p.slug)}
+                    className="px-4 py-4 cursor-pointer"
+                  >
                     <div className="flex items-center gap-3">
-                      {/* Small Preview Thumbnail */}
                       <img
                         src={p.imageFrontPath || "/placeholder.png"}
                         className="w-10 h-10 rounded object-cover border"
-                        alt=""
                       />
                       <div>
                         <div className="font-bold text-gray-800">{p.name}</div>
@@ -426,12 +431,16 @@ function CreateProduct({ productId, onSuccess }) {
           })),
         });
         const allowedSizes = SIZE_MAP[p.mainCategory] || [];
-        setSizes(
-          allowedSizes.map((s) => ({
+        const mappedSizes = allowedSizes.map((s) => {
+          // Look for the size object in the product's sizes array
+          const found = p.sizes?.find((x) => String(x.size) === String(s));
+          return {
             size: s,
-            quantity: p.sizes?.find((x) => x.size === s)?.quantity || 0,
-          })),
-        );
+            quantity: found ? found.quantity : 0,
+          };
+        });
+
+        setSizes(mappedSizes);
 
         setFlags({
           isNewArrival: !!p.isNewArrival,
@@ -444,10 +453,11 @@ function CreateProduct({ productId, onSuccess }) {
   console.log(product);
 
   useEffect(() => {
-    if (!mainCategory) {
-      setSizes([]);
-      return;
-    }
+    // if (!mainCategory) {
+    //   setSizes([]);
+    //   return;
+    // }
+    if (!mainCategory || isEdit) return;
     setSizes(SIZE_MAP[mainCategory].map((s) => ({ size: s, quantity: 0 })));
   }, [mainCategory]);
 

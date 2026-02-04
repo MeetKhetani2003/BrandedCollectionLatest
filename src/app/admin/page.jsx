@@ -19,10 +19,11 @@ export default function AdminPage() {
   useEffect(() => {
     async function load() {
       try {
+        // Change this line in your AdminPage useEffect
         const [u, p, o] = await Promise.all([
-          fetch("/api/user").then((r) => r.json()),
-          fetch("/api/products").then((r) => r.json()),
-          fetch("/api/order").then((r) => r.json()),
+          fetch("/api/user?limit=1000").then((r) => r.json()), // Add a high limit
+          fetch("/api/products?limit=10000").then((r) => r.json()),
+          fetch("/api/order?limit=1000").then((r) => r.json()),
         ]);
 
         setUsers(Array.isArray(u) ? u : u.users || []);
@@ -60,7 +61,7 @@ export default function AdminPage() {
   /* ---------- METRICS ---------- */
   const totalRevenue = useMemo(
     () => orders.reduce((sum, o) => sum + (o.amount || 0), 0),
-    [orders]
+    [orders],
   );
 
   /* ---------- SALES TIMELINE ---------- */
@@ -94,7 +95,7 @@ export default function AdminPage() {
 
         map[id] ??= { name, qty: 0 };
         map[id].qty += i.qty;
-      })
+      }),
     );
 
     return Object.values(map)
@@ -115,7 +116,7 @@ export default function AdminPage() {
 
         map[id] ??= { name, count: 0 };
         map[id].count += 1;
-      })
+      }),
     );
 
     return Object.values(map)
@@ -124,6 +125,7 @@ export default function AdminPage() {
   }, [users]);
 
   if (loading) return <p>Loading dashboard…</p>;
+  console.log();
 
   return (
     <div className="space-y-8">
@@ -268,7 +270,7 @@ function SalesLineChart({ data }) {
     gsap.fromTo(
       lineRef.current,
       { strokeDasharray: len, strokeDashoffset: len },
-      { strokeDashoffset: 0, duration: 1.4, ease: "power2.out" }
+      { strokeDashoffset: 0, duration: 1.4, ease: "power2.out" },
     );
   }, [data]);
 
