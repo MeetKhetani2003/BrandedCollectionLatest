@@ -121,7 +121,7 @@ const NavBar = () => {
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
-
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const headerRef = useRef(null); // used to compute available space
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
@@ -584,7 +584,91 @@ const NavBar = () => {
               )}
             </div>
           </div>
+          {/* MOBILE SEARCH OVERLAY */}
+          {isMobileSearchOpen && (
+            <div className="fixed inset-0 bg-[#FAF0E6] z-[70] flex flex-col animate-in slide-in-from-top duration-300">
+              {/* SEARCH BAR HEADER */}
+              <div className="flex items-center px-4 py-4 border-b border-[#DEB887]">
+                <form onSubmit={handleSearch} className="flex-1 relative">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search products..."
+                    className="w-full h-12 border border-[#DEB887] rounded-full pl-4 pr-12 text-sm bg-[#FAF0E6] outline-none"
+                  />
+                  <button type="submit" className="absolute right-4 top-3.5">
+                    <FiSearch className="w-5 h-5 text-gray-600" />
+                  </button>
+                </form>
+                <button
+                  onClick={() => {
+                    setIsMobileSearchOpen(false);
+                    setResults([]); // Clear results on close
+                  }}
+                  className="ml-4 text-[#654321] font-bold"
+                >
+                  Cancel
+                </button>
+              </div>
 
+              {/* 🔽 SEARCH RESULTS LIST (MOBILE) */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                {navLoading && (
+                  <div className="px-6 py-4 text-sm text-gray-500">
+                    Searching products...
+                  </div>
+                )}
+
+                {!navLoading && search.length >= 2 && results.length === 0 && (
+                  <div className="px-6 py-10 text-center">
+                    <p className="text-gray-500">
+                      No products found for "{search}"
+                    </p>
+                  </div>
+                )}
+
+                {!navLoading &&
+                  results.map((p) => (
+                    <Link
+                      key={p._id}
+                      href={`/products/${p.slug}`}
+                      onClick={() => {
+                        setSearch("");
+                        setResults([]);
+                        setIsMobileSearchOpen(false);
+                      }}
+                      className="flex items-center gap-4 px-4 py-3 border-b border-gray-50 hover:bg-gray-50"
+                    >
+                      {/* IMAGE */}
+                      <div className="w-16 h-16 rounded-lg bg-[#f5f1ec] overflow-hidden flex-shrink-0">
+                        <Image
+                          src={p.imageFrontPath || "/assets/placeholder.jpg"}
+                          alt={p.name}
+                          width={64}
+                          height={64}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+
+                      {/* TEXT */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {p.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {p.category} {p.subcategory && `• ${p.subcategory}`}
+                        </p>
+                        <p className="text-sm font-bold text-[#654321] mt-1">
+                          ₹{p.price?.current}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          )}
           {!initialized || loading ? (
             // skeleton / placeholder
             <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
@@ -628,7 +712,9 @@ const NavBar = () => {
             )}
           </button>
 
+          {/* Update this button in your "RIGHT" div */}
           <button
+            onClick={() => setIsMobileSearchOpen(true)} // Add this trigger
             className={`sm:hidden ${PALETTE.TEXT_PRIMARY} ${PALETTE.HOVER_ACCENT}`}
             aria-label="Search"
           >

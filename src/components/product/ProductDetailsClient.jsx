@@ -15,6 +15,7 @@ import BuyNowCheckoutModal from "../Layouts/BuyNowCheckoutModal";
 import { useUserStore } from "@/store/useUserStore";
 import { Pagination } from "swiper/modules";
 import "swiper/css/pagination";
+import Link from "next/link";
 const PALETTE = {
   BACKGROUND: "bg-[#fff9f4]",
   BORDER: "border-[#deb887]",
@@ -118,9 +119,43 @@ export default function ProductDetailsClient({ product }) {
   /* ---------------- UI ---------------- */
   return (
     <div className={`max-w-[1400px] mx-auto px-4 py-10 ${PALETTE.BACKGROUND}`}>
-      <p className={`text-xs opacity-60 mb-4 ${PALETTE.TEXT}`}>
-        Home / {product.category} / <span>{product.name}</span>
-      </p>
+      {/* --- CLICKABLE BREADCRUMBS --- */}
+      <nav className="flex mb-6" aria-label="Breadcrumb">
+        <ol
+          className={`flex items-center space-x-2 text-xs uppercase tracking-wider ${PALETTE.TEXT}`}
+        >
+          <li>
+            <Link
+              href="/"
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Home
+            </Link>
+          </li>
+          <li className="opacity-40">/</li>
+          <li>
+            <Link
+              href={`/products?mainCategory=${product.mainCategory?.toLowerCase()}`}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            >
+              {product.mainCategory || "Shop"}
+            </Link>
+          </li>
+          {/* <li className="opacity-40">/</li> */}
+          {/* <li>
+            <Link
+              href={`/products?category=${encodeURIComponent(product.category)}`}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            >
+              {product.category}
+            </Link>
+          </li> */}
+          <li className="opacity-40">/</li>
+          <li className="font-bold truncate max-w-[150px] sm:max-w-none">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
 
       <div className="grid lg:grid-cols-[2fr_1fr] gap-10">
         {/* Desktop Images */}
