@@ -170,14 +170,16 @@ function ProfileTab({ user, setUser, palette }) {
   // Initialize state
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
-
+  const [number, setNumber] = useState(user?.number || "");
   // CRITICAL FIX: Update local state when the 'user' prop changes (after fetch)
   useEffect(() => {
     if (user) {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
+      setNumber(user.number || "");
     }
   }, [user]);
+  console.log(user);
 
   // Address Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -188,14 +190,14 @@ function ProfileTab({ user, setUser, palette }) {
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName }),
+        body: JSON.stringify({ firstName, lastName, number }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         // Update the global user state so other components see the change
-        setUser({ ...user, firstName, lastName });
+        setUser({ ...user, firstName, lastName, number });
         setEditing(false);
         toast.success("Profile Updated Successfully");
       } else {
@@ -255,6 +257,12 @@ function ProfileTab({ user, setUser, palette }) {
             value={lastName}
             isEditing={editing}
             onChange={setLastName}
+          />
+          <DetailField
+            label="Phone Number"
+            value={number}
+            isEditing={editing}
+            onChange={setNumber}
           />
         </div>
 

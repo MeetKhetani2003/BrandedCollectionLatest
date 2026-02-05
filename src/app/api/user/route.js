@@ -27,10 +27,11 @@ export async function GET() {
         },
       ])
       .select(
-        "username email firstName lastName wishlist cart orderHistory role isActive"
+        "username email firstName lastName wishlist cart orderHistory role isActive createdAt number",
       )
       .lean();
 
+    console.log(users);
     const formattedUsers = users.map((u) => ({
       _id: u._id,
       name:
@@ -38,9 +39,9 @@ export async function GET() {
       email: u.email,
       role: u.role,
       isActive: u.isActive,
-
       orders: u.orderHistory || [],
-
+      createdAt: u.createdAt, // ✅ PASS TO FRONTEND
+      phoneNumber: u.number || "—", // ✅ PASS TO FRONTEND
       wishlist:
         u.wishlist?.map((p) => ({
           _id: p._id,
@@ -66,7 +67,7 @@ export async function GET() {
 
     return NextResponse.json(
       { success: true, users: formattedUsers },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("ADMIN USER LIST ERROR:", error);
@@ -76,7 +77,7 @@ export async function GET() {
         message: "Failed to load users",
         error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

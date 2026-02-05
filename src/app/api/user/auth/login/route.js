@@ -1,7 +1,7 @@
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import bcrypt, { compare } from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
@@ -9,89 +9,100 @@ export async function POST(req) {
     await connectDb();
     const body = await req.json();
 
-    const email = body?.email?.trim();
+    const email = body?.email?.toLowerCase().trim();
     const password = body?.password;
     const googleId = body?.googleId;
-    const provider = body?.provider || "local";
 
-    if (!email)
+    if (!email) {
       return NextResponse.json({ message: "Email required" }, { status: 400 });
+    }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
 
-    // ---------------- If user doesn't exist ----------------
     if (!user) {
       return NextResponse.json(
-        { message: "Account not found. Please sign up first." },
+        { message: "Account not found." },
         { status: 404 },
       );
     }
 
-    // Google login but account is password login
-    if (provider === "google" && user.password) {
-      return NextResponse.json(
-        {
-          message:
-            "This account uses a password. Login using email & password.",
-        },
-        { status: 403 },
-      );
-    }
+    // 🔐 TRUST DB, NOT CLIENT
+    const provider = user.provider || "local";
 
-    // Normal login but user is Google-only
-    if (provider === "local" && !user.password) {
-      return NextResponse.json(
-        {
-          message:
-            "This account was created using Google login. Continue with Google.",
-        },
-        { status: 403 },
-      );
-    }
-
-    // Validate password (local login)
+    /* ================= LOCAL LOGIN ================= */
     if (provider === "local") {
-      const valid = await bcrypt.compare(password, user.password);
-      if (!valid)
+      if (!password) {
         return NextResponse.json(
-          { message: "Wrong password" },
+          { message: "Password required" },
+          { status: 400 },
+        );
+      }
+
+      if (!user.password) {
+        return NextResponse.json(
+          { message: "Password not set for this account" },
+          { status: 400 },
+        );
+      }
+
+      const isMatch = await compare(password, user.password);
+      if (!isMatch) {
+        return NextResponse.json(
+          { message: "Invalid password" },
           { status: 401 },
         );
+      }
+
       return createSession(user);
     }
 
-    // Google login
-    if (provider === "google" && user.googleId === googleId) {
+    /* ================= GOOGLE LOGIN ================= */
+    if (provider === "google") {
+      if (!googleId || user.googleId !== googleId) {
+        return NextResponse.json(
+          { message: "This account uses Google login" },
+          { status: 403 },
+        );
+      }
+
       return createSession(user);
     }
 
+    /* ================= UNKNOWN ================= */
     return NextResponse.json(
-      { message: "Invalid login attempt" },
+      { message: "Unsupported auth provider" },
       { status: 400 },
     );
   } catch (err) {
     console.error("LOGIN ERROR:", err);
-    return NextResponse.json({ message: "Internal error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
+/* ================= SESSION CREATOR ================= */
 function createSession(user) {
   const token = jwt.sign(
-    { userId: user._id, email: user.email },
+    { userId: user._id.toString(), email: user.email },
     process.env.JWT_SECRET || "MyDevelopement",
     { expiresIn: "7d" },
   );
 
   const response = NextResponse.json({
     message: "Login successful",
-    user: { id: user._id, email: user.email, provider: user.provider },
+    user: {
+      id: user._id,
+      email: user.email,
+    },
   });
 
   response.cookies.set("auth", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7,
     sameSite: "strict",
+    maxAge: 60 * 60 * 24 * 7,
     path: "/",
   });
 

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import InputGroupMolecule from "../moleules/InputGroupMolecule";
 import GoogleLoginButton from "@/components/authButtons/GoogleLogin";
 import { useRouter } from "next/navigation";
+import Link from "next/link"; // Import Link
 import toast from "react-hot-toast";
 import { useUserStore } from "@/store/useUserStore";
 
@@ -16,38 +17,38 @@ const LoginFormOrganism = ({ switchToSignup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!email || !password) {
       toast.error("Email and password are required.");
       return;
     }
 
     setLoading(true);
-
     try {
       const res = await fetch("/api/user/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password, provider: "local" }),
+        body: JSON.stringify({
+          email,
+          password,
+          provider: "local",
+        }),
       });
 
       const data = await res.json();
-
+      console.log("Server Response Error:", data); // ADD THIS LINE
       if (!res.ok) {
         toast.error(data.message || "Login failed.");
       } else {
-        // 🔥 THIS LINE FIXES EVERYTHING
         await getUser();
-
-        router.push("/");
+        toast.success("Welcome back!");
         window.location.assign("/");
       }
-    } catch {
+    } catch (error) {
       toast.error("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleGoogleSuccess = () => router.push("/");
@@ -70,14 +71,25 @@ const LoginFormOrganism = ({ switchToSignup }) => {
         required
       />
 
-      <InputGroupMolecule
-        label="Password"
-        type="password"
-        placeholder="••••••••"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+      <div className="space-y-1">
+        <InputGroupMolecule
+          label="Password"
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {/* --- FORGOT PASSWORD LINK --- */}
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-xs font-medium text-[#654321] hover:text-[#DEB887] transition-colors duration-300"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+      </div>
 
       <button
         disabled={loading}
@@ -100,7 +112,7 @@ const LoginFormOrganism = ({ switchToSignup }) => {
       <p className="text-center text-sm text-[#654321]">
         Don’t have an account?{" "}
         <button
-          type="button" // Important: prevents form submission
+          type="button"
           onClick={switchToSignup}
           className="text-[#DEB887] hover:text-[#654321] font-medium transition-colors duration-300 underline underline-offset-4"
         >

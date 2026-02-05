@@ -56,7 +56,7 @@ export default function AdminOrders() {
       {/* ORDERS LIST */}
       {tab === TABS.ORDERS && (
         <div className="bg-white border rounded-xl overflow-hidden">
-          <div className="grid grid-cols-6 px-4 py-3 bg-gray-100 text-sm font-medium">
+          <div className="grid grid-cols-7 px-4 py-3 bg-gray-100 text-sm font-medium">
             <div>Order ID</div>
             <div>User</div>
             <div>Amount</div>
@@ -109,7 +109,7 @@ export default function AdminOrders() {
                         }
 
                         setOrders((prev) =>
-                          prev.filter((o) => o._id !== order._id)
+                          prev.filter((o) => o._id !== order._id),
                         );
                       }}
                       className="text-red-600 hover:underline"

@@ -17,7 +17,7 @@ const CartItemSchema = new Schema(
       min: 1,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const addressSchema = new mongoose.Schema({
@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
+    },
+    number: {
+      type: String,
+      required: false,
     },
     password: {
       type: String,
@@ -123,7 +127,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre("save", async function () {
@@ -135,7 +139,7 @@ userSchema.pre("save", async function () {
 
 userSchema.methods.correctPassword = async function (
   candidatePassword,
-  userPasswordHash
+  userPasswordHash,
 ) {
   return await bcrypt.compare(candidatePassword, userPasswordHash);
 };

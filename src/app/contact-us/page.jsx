@@ -56,7 +56,7 @@ export default function ContactUs() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("DATA_SENT_TO_CONCIERGE");
+        toast.success("Message sent successfully! We'll get back to you soon.");
         setForm({
           name: "",
           email: "",
@@ -144,21 +144,37 @@ export default function ContactUs() {
                 />
                 <div className="relative group">
                   <select
-                    className={`w-full bg-transparent border-b ${PALETTE.BORDER} py-3 appearance-none focus:outline-none transition-all text-[14px] font-mono text-[#654321]`}
+                    className={`w-full bg-transparent border-b ${PALETTE.BORDER} py-3 appearance-none focus:outline-none transition-all text-[14px] font-mono text-[#654321] peer`}
                     value={form.reason}
+                    required // Always required for this form
                     onChange={(e) =>
                       setForm({ ...form, reason: e.target.value })
                     }
                   >
-                    <option value="">INQUIRY_CATEGORY</option>
+                    <option value="" disabled hidden></option>
                     <option value="product">PRODUCT_INQUIRY</option>
                     <option value="complaint">SERVICE_COMPLAINT</option>
                     <option value="other">OTHER_SUPPORT</option>
                   </select>
+
                   <ChevronDown
-                    className="absolute right-0 top-4 text-[#DEB887]"
+                    className="absolute right-0 top-4 text-[#DEB887] pointer-events-none"
                     size={14}
                   />
+
+                  {/* FLOATING LABEL WITH REQUIRED STAR */}
+                  <label
+                    className={`absolute left-0 tracking-[0.2em] uppercase pointer-events-none transition-all duration-300
+        ${
+          form.reason
+            ? "-top-4 text-[10px] text-[#654321]"
+            : "top-3 text-[14px] text-[#DEB887]"
+        } 
+        group-focus-within:-top-4 group-focus-within:text-[10px] group-focus-within:text-[#654321]`}
+                  >
+                    Inquiry Category{" "}
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
                 </div>
               </div>
 
@@ -188,7 +204,8 @@ export default function ContactUs() {
                   className="peer w-full bg-transparent border-b border-[#DEB887]/50 py-3 focus:outline-none focus:border-[#654321] transition-all text-[14px] font-mono text-[#654321] placeholder-transparent resize-none overflow-hidden"
                 />
                 <label className="absolute left-0 top-3 text-[14px] tracking-[0.2em] text-[#DEB887] pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[#654321] peer-[:not(:placeholder-shown)]:-top-6 uppercase">
-                  MESSAGE_TRANSMISSION
+                  MESSAGE_TRANSMISSION{" "}
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
               </div>
 

@@ -22,11 +22,12 @@ export async function POST(req) {
   try {
     await connectDb();
     const data = await req.json();
+    console.log(data);
 
     if (!data.email) {
       return NextResponse.json(
         { message: "Email is required for signup." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,7 +40,7 @@ export async function POST(req) {
         {
           message: `This email is already registered via ${existingUser.provider}. Please log in.`,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -47,7 +48,7 @@ export async function POST(req) {
       if (!data.password) {
         return NextResponse.json(
           { message: "Password is required for local signup." },
-          { status: 400 }
+          { status: 400 },
         );
       }
       delete data.googleId;
@@ -55,7 +56,7 @@ export async function POST(req) {
       if (!data.googleId) {
         return NextResponse.json(
           { message: "Google ID is required for Google signup." },
-          { status: 400 }
+          { status: 400 },
         );
       }
       delete data.password;
@@ -73,6 +74,7 @@ export async function POST(req) {
       googleId: provider === "google" ? data.googleId : undefined,
       password: provider === "local" ? data.password : undefined,
       username,
+      number: data.number || "",
       firstName: data.firstName || "",
       lastName: data.lastName || "",
     });
@@ -82,25 +84,26 @@ export async function POST(req) {
       email: newUser.email,
       username: newUser.username,
       firstName: newUser.firstName,
+      number: newUser.number,
       lastName: newUser.lastName,
       provider: newUser.provider,
     };
     return NextResponse.json(
       { user: userResponse, message: "User created successfully" },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error.name === "ValidationError") {
       return NextResponse.json(
         { message: error.message, details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Signup Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error during signup." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -114,7 +117,7 @@ export async function GET(req) {
     console.error("Error in getting users:", error);
     return NextResponse.json(
       { message: "Error fetching user data." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -11,6 +11,7 @@ const SignupFormOrganism = ({ switchToLogin }) => {
     lastName: "",
     email: "",
     password: "",
+    number: "",
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -18,7 +19,7 @@ const SignupFormOrganism = ({ switchToLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.firstName || !form.email || !form.password) {
+    if (!form.firstName || !form.email || !form.password || !form.number) {
       toast.error("All fields are required.");
       return;
     }
@@ -33,6 +34,7 @@ const SignupFormOrganism = ({ switchToLogin }) => {
         body: JSON.stringify({
           email: form.email,
           password: form.password,
+          number: form.number,
           username: `${form.firstName} ${form.lastName}`,
           provider: "local",
         }),
@@ -44,7 +46,19 @@ const SignupFormOrganism = ({ switchToLogin }) => {
         toast.error(data.message || "Signup failed.");
       } else {
         toast.success("Signup successful 🎉");
-        // router.push("/");
+
+        // --- REDIRECT TO LOGIN TAB ---
+        // We trigger the state change provided by the parent component
+        switchToLogin();
+
+        // Optional: Clear form after success
+        setForm({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          number: "",
+        });
       }
     } catch (error) {
       toast.error("Something went wrong. Try again.");
@@ -86,7 +100,14 @@ const SignupFormOrganism = ({ switchToLogin }) => {
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
       />
-
+      <InputGroupMolecule
+        label="Phone Number"
+        type="tel"
+        placeholder="9876543210"
+        required
+        value={form.number}
+        onChange={(e) => setForm({ ...form, number: e.target.value })}
+      />
       <InputGroupMolecule
         label="Password"
         type="password"
