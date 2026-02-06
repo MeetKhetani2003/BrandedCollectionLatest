@@ -92,7 +92,7 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex flex-col md:flex-row gap-8">
           {/* LEFT SIDEBAR (Sticky on Desktop, Top on Mobile) */}
-          <aside className="md:w-1/4 h-fit md:sticky top-28 self-start">
+          <aside className="w-full md:w-1/4 h-fit md:sticky top-28 self-start">
             <div
               className={`${PALETTE.CARD}  p-6 rounded-xl border ${PALETTE.BORDER} shadow-sm`}
             >
@@ -104,7 +104,7 @@ export default function ProfilePage() {
               </div>
 
               {/* TAB NAVIGATION */}
-              <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+              <nav className="flex flex-row md:flex-col flex-nowrap gap-2 max-w-full overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -179,7 +179,6 @@ function ProfileTab({ user, setUser, palette }) {
       setNumber(user.number || "");
     }
   }, [user]);
-  console.log(user);
 
   // Address Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);

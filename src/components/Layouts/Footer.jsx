@@ -194,7 +194,7 @@ const Footer = () => {
             <p className="text-sm text-gray-700 mb-4">
               Get early access to drops, exclusive offers and style tips.
             </p>
-            <form
+            {/* <form
               onSubmit={(e) => e.preventDefault()}
               className="flex flex-col gap-3 max-w-sm"
             >
@@ -214,7 +214,7 @@ const Footer = () => {
               <p className="text-[11px] text-gray-500">
                 By joining, you agree to receive emails from Branded Collection.
               </p>
-            </form>
+            </form> */}
           </div>
         </div>
 
