@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { generateInvoice } from "@/utils/generateInvoice";
 import CreateInvoiceForm from "./CreateAdminOrderForm";
+import { useRouter } from "next/navigation";
 
 const TABS = {
   ORDERS: "orders",
@@ -14,6 +15,8 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [openOrderId, setOpenOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [trackingLoading, setTrackingLoading] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchOrders() {
@@ -56,7 +59,7 @@ export default function AdminOrders() {
       {/* ORDERS LIST */}
       {tab === TABS.ORDERS && (
         <div className="bg-white border rounded-xl overflow-hidden">
-          <div className="grid grid-cols-7 px-4 py-3 bg-gray-100 text-sm font-medium">
+          <div className="grid grid-cols-[1.2fr_1.5fr_1fr_2fr_1fr_0.7fr_0.7fr] px-6 py-3 bg-gray-100 text-sm font-semibold text-gray-700">
             <div>Order ID</div>
             <div>User</div>
             <div>Amount</div>
@@ -67,12 +70,14 @@ export default function AdminOrders() {
           </div>
 
           {orders.map((order) => {
+            console.log(order);
+
             const isOpen = openOrderId === order._id;
 
             return (
               <div key={order._id} className="border-t">
                 {/* ROW */}
-                <div className="grid grid-cols-7 px-4 py-3 text-sm items-center">
+                <div className="grid grid-cols-[1.2fr_1.5fr_1fr_2fr_1fr_0.7fr_0.7fr] px-6 py-4 text-sm items-start hover:bg-gray-50 transition">
                   <div>#{order._id.slice(-6)}</div>
                   <div>
                     {order.user
@@ -84,12 +89,101 @@ export default function AdminOrders() {
                   </div>
 
                   <div>₹{order.amount}</div>
-                  <div>{order.status}</div>
+                  <div className="space-y-2">
+                    {/* TRACKING STATUS */}
+                    {order.tracking?.status ? (
+                      <span
+                        className={`text-xs font-medium ${
+                          order.tracking.raw?.OpStatus?.startsWith("FAILED")
+                            ? "text-red-600"
+                            : "text-green-700"
+                        }`}
+                      >
+                        {order.tracking.status}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-500">No tracking</span>
+                    )}
+
+                    {/* AWB INPUT + FETCH */}
+                    <div className="flex gap-1 mt-1">
+                      <input
+                        type="text"
+                        defaultValue={order.awbNumber || ""}
+                        placeholder="Scan AWB"
+                        className="w-28 border px-1 py-0.5 text-xs rounded"
+                        onKeyDown={async (e) => {
+                          if (e.key !== "Enter") return;
+
+                          const awb = e.target.value.trim();
+                          if (!awb) return;
+
+                          // 1️⃣ Save AWB
+                          await fetch("/api/order/awb", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              orderId: order._id,
+                              awbNumber: awb,
+                            }),
+                          });
+
+                          // 2️⃣ Fetch tracking
+                          setTrackingLoading(order._id);
+
+                          const res = await fetch(
+                            `/api/order/tracking?orderId=${order._id}`,
+                          );
+                          const data = await res.json();
+
+                          setOrders((prev) =>
+                            prev.map((o) =>
+                              o._id === order._id
+                                ? {
+                                    ...o,
+                                    awbNumber: awb,
+                                    tracking: data.tracking,
+                                  }
+                                : o,
+                            ),
+                          );
+
+                          setTrackingLoading(null);
+                        }}
+                      />
+
+                      <button
+                        disabled={trackingLoading === order._id}
+                        onClick={async () => {
+                          setTrackingLoading(order._id);
+
+                          const res = await fetch(
+                            `/api/order/tracking?orderId=${order._id}`,
+                          );
+                          const data = await res.json();
+
+                          setOrders((prev) =>
+                            prev.map((o) =>
+                              o._id === order._id
+                                ? { ...o, tracking: data.tracking }
+                                : o,
+                            ),
+                          );
+
+                          setTrackingLoading(null);
+                        }}
+                        className="bg-blue-600 text-white text-xs px-2 rounded disabled:opacity-50"
+                      >
+                        {trackingLoading === order._id ? "…" : "Fetch"}
+                      </button>
+                    </div>
+                  </div>
+
                   <div>{new Date(order.createdAt).toLocaleDateString()}</div>
                   <div className="text-right">
                     <button
                       onClick={() => setOpenOrderId(isOpen ? null : order._id)}
-                      className="underline"
+                      className="text-blue-600 hover:underline"
                     >
                       {isOpen ? "Hide" : "View"}
                     </button>
@@ -112,7 +206,7 @@ export default function AdminOrders() {
                           prev.filter((o) => o._id !== order._id),
                         );
                       }}
-                      className="text-red-600 hover:underline"
+                      className="text-red-600 hover:text-red-700 font-medium"
                     >
                       Delete
                     </button>
@@ -121,7 +215,7 @@ export default function AdminOrders() {
 
                 {/* DRAWER */}
                 {isOpen && (
-                  <div className="bg-gray-50 px-6 py-4 space-y-4">
+                  <div className="bg-gray-50 px-6 py-5 space-y-5 border-t">
                     <div>
                       <p className="font-medium">
                         Payment ID: {order.paymentId}
@@ -151,10 +245,22 @@ export default function AdminOrders() {
                         {order.items.map((i) => (
                           <div
                             key={i._id}
-                            className="flex justify-between bg-white border rounded p-2"
+                            onClick={() => {
+                              if (!i.product?.slug) return;
+                              router.push(`/products/${i.product.slug}`);
+                            }}
+                            className="flex justify-between bg-white border rounded-lg p-3 text-sm cursor-pointer hover:bg-gray-50 hover:border-[#4a2e1f] transition"
                           >
                             <div>
-                              <p>{i.product?.name}</p>
+                              <p
+                                onClick={() => {
+                                  if (!i.product?.slug) return;
+                                  router.push(`/product/${i.product.slug}`);
+                                }}
+                                className="font-medium text-[#4a2e1f] hover:underline cursor-pointer"
+                              >
+                                {i.product?.name}
+                              </p>
                               <p className="text-xs text-gray-500">
                                 Size: {i.size} | Qty: {i.qty}
                               </p>
@@ -164,6 +270,64 @@ export default function AdminOrders() {
                         ))}
                       </div>
                     </div>
+                    {/* TRACKING SECTION */}
+                    {/* <div className="border-t pt-3 space-y-2">
+                      <p className="font-medium">Tracking</p>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          disabled={trackingLoading === order._id}
+                          onClick={async () => {
+                            setTrackingLoading(order._id);
+
+                            const res = await fetch(
+                              `/api/order/tracking?orderId=${order._id}`,
+                            );
+                            const data = await res.json();
+
+                            setOrders((prev) =>
+                              prev.map((o) =>
+                                o._id === order._id
+                                  ? {
+                                      ...o,
+                                      tracking: data.tracking,
+                                    }
+                                  : o,
+                              ),
+                            );
+
+                            setTrackingLoading(null);
+                          }}
+                          className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
+                        >
+                          {trackingLoading === order._id
+                            ? "Fetching…"
+                            : "Fetch Tracking"}
+                        </button>
+
+                        <span className="text-sm">
+                          {order.tracking?.raw?.OpStatus?.startsWith(
+                            "FAILED",
+                          ) && (
+                            <span className="text-red-600">
+                              Unauthorized / Invalid AWB
+                            </span>
+                          )}
+
+                          {order.tracking?.status && (
+                            <span className="text-green-700">
+                              {order.tracking.status}
+                            </span>
+                          )}
+
+                          {!order.tracking && (
+                            <span className="text-gray-500">
+                              No tracking fetched
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    </div> */}
 
                     <div className="flex justify-between items-center pt-3">
                       <p className="font-semibold">Total: ₹{order.amount}</p>

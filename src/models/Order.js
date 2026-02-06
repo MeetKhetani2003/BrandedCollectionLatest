@@ -12,6 +12,22 @@ const orderSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    awbNumber: {
+      type: String,
+      trim: true,
+    },
+
+    courier: {
+      type: String,
+      default: "shree-tirupati",
+    },
+
+    tracking: {
+      status: String, // CurStatus
+      lastFetchedAt: Date,
+      raw: mongoose.Schema.Types.Mixed, // full API response
+    },
+
     customerEmail: {
       type: String,
       trim: true,
@@ -22,7 +38,7 @@ const orderSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-          required: false, // 🔥 manual items allowed
+          required: false,
         },
         productName: String, // 🔥 manual name
         price: Number, // 🔥 override price
