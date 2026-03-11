@@ -32,10 +32,12 @@ export default function ProductCard({ product }) {
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  // ✅ SAFE image source (fallback always exists)
   const [imageSrc, setImageSrc] = useState(
     product.imageFrontPath || "/assets/Products/Product1.jpg",
   );
+
+  /* 🔹 Back image visibility state */
+  const [showBackImage, setShowBackImage] = useState(!!product.imageBackPath);
 
   const { user } = useUserStore();
   const isLoggedIn = !!user?._id;
@@ -51,6 +53,7 @@ export default function ProductCard({ product }) {
     toast.error("Login first to continue 🔐");
     router.push("/auth");
   };
+
   console.log("Product", product);
 
   return (
@@ -70,6 +73,7 @@ export default function ProductCard({ product }) {
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
         >
+          {/* FRONT IMAGE */}
           <Image
             src={imageSrc}
             alt={product.name}
@@ -80,22 +84,22 @@ export default function ProductCard({ product }) {
             onLoad={() => setIsImageLoaded(true)}
             onError={() => {
               setImageSrc("/assets/Products/Product1.jpg");
-              setIsImageLoaded(true); // 🔑 Prevent infinite skeleton
+              setIsImageLoaded(true);
             }}
           />
 
-          {/* ---------- BACK IMAGE (OPTIONAL) ---------- */}
-          {product.imageBackPath && (
+          {/* BACK IMAGE (only if exists & valid) */}
+          {showBackImage && (
             <Image
               src={product.imageBackPath}
               alt="back"
               fill
               sizes="(max-width: 768px) 100vw, 25vw"
-              className={`object-cover transition duration-300 ${
+              className={`object-cover transition-opacity duration-300 ${
                 hover ? "opacity-100" : "opacity-0"
               }`}
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
+              onError={() => {
+                setShowBackImage(false);
               }}
             />
           )}
@@ -104,7 +108,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={(e) => {
               e.preventDefault();
-              e.stopPropagation(); // 🔑 Stop the click from reaching the Card's onClick
+              e.stopPropagation();
 
               if (!isLoggedIn) {
                 requireLogin();
@@ -114,7 +118,6 @@ export default function ProductCard({ product }) {
               if (isWishlisted) {
                 removeWishlist(product._id);
               } else {
-                // Ensure the store receives the exact product object
                 addWishlist(product);
               }
             }}
@@ -145,9 +148,11 @@ export default function ProductCard({ product }) {
                 ₹{product.price?.current}
               </span>
             </div>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
+
                 if (!isLoggedIn) return requireLogin();
 
                 if (product.mainCategory === "accessories") {

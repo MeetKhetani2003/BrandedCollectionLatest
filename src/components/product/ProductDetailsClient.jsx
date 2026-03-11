@@ -29,11 +29,18 @@ export default function ProductDetailsClient({ product }) {
 
   /* ---------------- IMAGES (FIXED) ---------------- */
   const imgFront = product?.imageFrontPath || "/assets/Products/Product1.jpg";
-  const imgBack = product?.imageBackPath || "/assets/Products/Product1.jpg";
+  const imgBack = product?.imageBackPath;
 
   const gallery = useMemo(() => {
     const extra = product?.gallery?.map((g) => g.path) || [];
-    return [imgFront, imgBack, ...extra].filter(Boolean);
+
+    const images = [imgFront];
+
+    if (imgBack) {
+      images.push(imgBack);
+    }
+
+    return [...images, ...extra].filter(Boolean);
   }, [imgFront, imgBack, product?.gallery]);
 
   /* ---------------- AUTH ---------------- */
