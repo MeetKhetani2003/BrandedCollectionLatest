@@ -2,16 +2,11 @@ import fs from "fs";
 import path from "path";
 
 /**
- * process.cwd() is /home/u748179017/domains/.../nodejs
- * We use ".." to move up and enter "public_html"
+ * ABSOLUTE PATH: This tells the server exactly where the folder is.
+ * This works even if GitHub moves your code folder.
  */
-const BASE_UPLOAD_DIR = path.join(
-  process.cwd(),
-  "..",
-  "public_html",
-  "uploads",
-  "products",
-);
+const BASE_UPLOAD_DIR =
+  "/home/u748179017/domains/darkorange-flamingo-321246.hostingersite.com/public_html/uploads/products";
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -26,8 +21,8 @@ export async function saveImage({ buffer, productId, filename }) {
   const filePath = path.join(productDir, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // ✅ RETURN URL: We remove "/public_html" from the URL
-  // because the domain points directly to that folder.
+  // ✅ RETURN URL: The browser sees public_html as the root "/",
+  // so we only return the part after public_html.
   return `/uploads/products/${productId}/${filename}`;
 }
 
@@ -35,8 +30,11 @@ export function deleteImage(relativePath) {
   if (!relativePath) return;
 
   // relativePath looks like: /uploads/products/123/img.jpg
-  // We reconstruct the full path to public_html to delete it
-  const fullPath = path.join(process.cwd(), "..", "public_html", relativePath);
+  // We join the root path with the relative path to find the file
+  const fullPath = path.join(
+    "/home/u748179017/domains/darkorange-flamingo-321246.hostingersite.com/public_html",
+    relativePath,
+  );
 
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);
