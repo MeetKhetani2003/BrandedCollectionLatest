@@ -2,15 +2,15 @@ import fs from "fs";
 import path from "path";
 
 /**
- * process.cwd() === /home/.../nodeapp
- * Files go into: nodeapp/public/uploads/products
- * Public URL:     /public/uploads/products
+ * process.cwd() is /home/u748179017/domains/.../nodejs
+ * We use ".." to move up and enter "public_html"
  */
 const BASE_UPLOAD_DIR = path.join(
   process.cwd(),
-  "public",
+  "..",
+  "public_html",
   "uploads",
-  "products"
+  "products",
 );
 
 function ensureDir(dir) {
@@ -26,15 +26,18 @@ export async function saveImage({ buffer, productId, filename }) {
   const filePath = path.join(productDir, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // ✅ MUST match Hostinger public URL
-  return `/public/uploads/products/${productId}/${filename}`;
+  // ✅ RETURN URL: We remove "/public_html" from the URL
+  // because the domain points directly to that folder.
+  return `/uploads/products/${productId}/${filename}`;
 }
 
 export function deleteImage(relativePath) {
   if (!relativePath) return;
 
-  // relativePath already starts with /public/...
-  const fullPath = path.join(process.cwd(), relativePath);
+  // relativePath looks like: /uploads/products/123/img.jpg
+  // We reconstruct the full path to public_html to delete it
+  const fullPath = path.join(process.cwd(), "..", "public_html", relativePath);
+
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);
   }
