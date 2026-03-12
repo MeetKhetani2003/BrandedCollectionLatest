@@ -2,11 +2,16 @@ import fs from "fs";
 import path from "path";
 
 /**
- * ABSOLUTE PATH: This tells the server exactly where the folder is.
- * This works even if GitHub moves your code folder.
+ * process.cwd() === /home/.../nodeapp
+ * Files go into: nodeapp/public/uploads/products
+ * Public URL:     /public/uploads/products
  */
-const BASE_UPLOAD_DIR =
-  "/home/u748179017/domains/darkorange-flamingo-321246.hostingersite.com/public_html/uploads/products";
+const BASE_UPLOAD_DIR = path.join(
+  process.cwd(),
+  "public",
+  "uploads",
+  "products",
+);
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -21,21 +26,15 @@ export async function saveImage({ buffer, productId, filename }) {
   const filePath = path.join(productDir, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // ✅ RETURN URL: The browser sees public_html as the root "/",
-  // so we only return the part after public_html.
-  return `/uploads/products/${productId}/${filename}`;
+  // ✅ MUST match Hostinger public URL
+  return `/public/uploads/products/${productId}/${filename}`;
 }
 
 export function deleteImage(relativePath) {
   if (!relativePath) return;
 
-  // relativePath looks like: /uploads/products/123/img.jpg
-  // We join the root path with the relative path to find the file
-  const fullPath = path.join(
-    "/home/u748179017/domains/darkorange-flamingo-321246.hostingersite.com/public_html",
-    relativePath,
-  );
-
+  // relativePath already starts with /public/...
+  const fullPath = path.join(process.cwd(), relativePath);
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);
   }
