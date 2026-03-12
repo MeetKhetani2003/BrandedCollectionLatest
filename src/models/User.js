@@ -97,10 +97,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     profilePicture: String,
-    /** 🏠 MULTIPLE ADDRESSES SUPPORTED HERE */
     addresses: [addressSchema],
-
-    /** ⭐ OPTIONAL DEFAULT SELECTED ADDRESS INDEX */
     defaultAddress: {
       type: Number,
       default: 0,
@@ -121,7 +118,6 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
-
     passwordResetToken: String,
     passwordResetExpires: Date,
   },

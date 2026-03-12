@@ -32,7 +32,8 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1); // 1: Cart, 2: Address, 3: Payment
   const [addressModal, setAddressModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(0);
-
+  const [phoneModal, setPhoneModal] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState(user?.number || "");
   const [newAddress, setNewAddress] = useState({
     street: "",
     city: "",
@@ -52,7 +53,11 @@ export default function CheckoutPage() {
       document.body.appendChild(script);
     }
   }, [currentStep]);
-
+  useEffect(() => {
+    if (user?.number) {
+      setPhoneNumber(user.number);
+    }
+  }, [user]);
   const subtotal = cart.reduce(
     (total, item) => total + Number(item.price) * item.qty,
     0,
@@ -61,15 +66,48 @@ export default function CheckoutPage() {
   const total = subtotal + delivery;
 
   const nextStep = () => {
-    if (
-      currentStep === 2 &&
-      (!user?.addresses || user.addresses.length === 0)
-    ) {
-      return toast.error("Please add a delivery address!");
+    if (currentStep === 2) {
+      if (!phoneNumber || phoneNumber.trim() === "") {
+        toast.error("Please add your phone number 📱");
+        return;
+      }
+
+      if (!user?.addresses || user.addresses.length === 0) {
+        toast.error("Please add a delivery address 📍");
+        return;
+      }
     }
+
     setCurrentStep((prev) => prev + 1);
   };
+  const savePhoneNumber = async () => {
+    if (!phoneNumber || phoneNumber.trim().length < 10) {
+      return toast.error("Enter valid phone number");
+    }
 
+    const cleanNumber = phoneNumber.trim();
+
+    const res = await fetch("/api/user/profile", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        number: cleanNumber,
+      }),
+    });
+
+    if (!res.ok) return toast.error("Failed to update phone");
+
+    setUser({
+      ...user,
+      number: cleanNumber,
+    });
+
+    setPhoneNumber(cleanNumber);
+
+    toast.success("Phone number saved ✅");
+  };
   const prevStep = () => setCurrentStep((prev) => prev - 1);
 
   // ... (saveAddress and handlePayment functions remain exactly the same as your code)
@@ -98,14 +136,25 @@ export default function CheckoutPage() {
   };
 
   const handlePayment = async () => {
+    // validate phone number before payment
+    if (!user?.number || user.number.trim() === "") {
+      setPhoneModal(true);
+      toast.error("Please add your phone number first 📱");
+      return;
+    }
+
     if (!user) return toast.error("Login Required!");
+
     const selected = user.addresses[selectedAddress];
+
     const orderRes = await fetch("/api/checkout/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: total }),
     });
+
     const order = await orderRes.json();
+
     if (!order.id) return toast.error("Payment gateway error!");
 
     const razor = new window.Razorpay({
@@ -114,6 +163,7 @@ export default function CheckoutPage() {
       currency: "INR",
       order_id: order.id,
       name: "Branded Collection",
+
       handler: async function (response) {
         const verifyRes = await fetch("/api/checkout/verify-payment", {
           method: "POST",
@@ -128,7 +178,9 @@ export default function CheckoutPage() {
             address: selected,
           }),
         });
+
         const verifyData = await verifyRes.json();
+
         if (verifyData.success) {
           toast.success("Payment Successful 🎉");
           window.location.href = "/checkout/success";
@@ -137,6 +189,7 @@ export default function CheckoutPage() {
         }
       },
     });
+
     razor.open();
   };
 
@@ -244,6 +297,30 @@ export default function CheckoutPage() {
         {/* STEP 2: ADDRESS SELECTION */}
         {currentStep === 2 && (
           <div className="space-y-6">
+            <div className="bg-white border rounded-xl p-4 shadow-sm space-y-3">
+              <p className="font-semibold">Phone Number</p>
+
+              {!phoneNumber ? (
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    placeholder="Enter phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="border p-3 rounded-xl flex-1"
+                  />
+
+                  <button
+                    onClick={savePhoneNumber}
+                    className={`${PALETTE.ACCENT} px-4 rounded-xl`}
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <p className="text-green-600 font-medium">{phoneNumber} ✓</p>
+              )}
+            </div>
             <div className="flex justify-between items-end">
               <h2 className={`text-2xl font-bold ${PALETTE.TEXT}`}>
                 Delivery Address
@@ -367,6 +444,37 @@ export default function CheckoutPage() {
                 Save & Use Address
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {phoneModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white p-6 w-[380px] rounded-2xl shadow-2xl relative">
+            <X
+              className="absolute top-4 right-4 cursor-pointer"
+              onClick={() => setPhoneModal(false)}
+            />
+
+            <h3 className="font-bold text-xl mb-4">Add Phone Number</h3>
+
+            <p className="text-sm text-gray-500 mb-4">
+              Phone number is required for order updates and delivery.
+            </p>
+
+            <input
+              type="tel"
+              placeholder="Enter phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="border-2 border-gray-100 p-3 rounded-xl w-full focus:border-[#654321] outline-none"
+            />
+
+            <button
+              onClick={savePhoneNumber}
+              className={`${PALETTE.ACCENT} w-full py-3 rounded-xl font-bold mt-4`}
+            >
+              Save Phone Number
+            </button>
           </div>
         </div>
       )}

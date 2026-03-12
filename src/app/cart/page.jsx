@@ -19,7 +19,7 @@ const PALETTE = {
 export default function CartPage() {
   const { cart, fetchCart, updateQty, removeFromCart } = useCartStore();
   const { user, getUser, setUser } = useUserStore();
-
+  const [phoneNumber, setPhoneNumber] = useState(user?.number || "");
   const [couponCode, setCouponCode] = useState("");
   const [couponData, setCouponData] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -55,6 +55,11 @@ export default function CartPage() {
       { opacity: 1, y: 0, duration: 0.3 },
     );
   }, [step]);
+  useEffect(() => {
+    if (user?.number) {
+      setPhoneNumber(user.number);
+    }
+  }, [user]);
 
   const subtotal = useMemo(
     () => cart.reduce((acc, it) => acc + Number(it.price) * it.qty, 0),
@@ -126,6 +131,9 @@ export default function CartPage() {
     if (!user.addresses || user.addresses.length === 0)
       return toast.error("Add an address first");
     const selected = user.addresses[selectedAddressIndex];
+    if (!user?.number) {
+      return toast.error("Phone number required");
+    }
     try {
       setLoadingPayment(true);
       const orderRes = await fetch("/api/checkout/create-order", {
@@ -166,7 +174,33 @@ export default function CartPage() {
       toast.error("Payment failed");
     }
   };
+  const savePhoneNumber = async () => {
+    const clean = phoneNumber.trim();
 
+    if (!/^\d{10}$/.test(clean)) {
+      return toast.error("Enter valid 10 digit phone number");
+    }
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number: clean }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      setUser({
+        ...user,
+        number: clean,
+      });
+
+      setPhoneNumber(clean);
+      toast.success("Phone number saved");
+    } catch {
+      toast.error("Failed to save phone number");
+    }
+  };
   // Reusable Coupon Section Component
   const CouponSection = () => (
     <div className="mt-4">
@@ -357,15 +391,55 @@ export default function CartPage() {
             )}
 
             {/* STEP 2: ADDRESS */}
+            {/* STEP 2: CONTACT + ADDRESS */}
             {step === 2 && (
               <div className="bg-white rounded-lg shadow-sm p-4">
-                <h2 className="text-lg font-semibold mb-4">Delivery Address</h2>
+                <h2 className="text-lg font-semibold mb-4">
+                  Contact & Delivery
+                </h2>
+
+                {/* PHONE */}
+                <div className="border p-3 rounded mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium">Phone Number</p>
+                    {user?.number && (
+                      <span className="text-xs text-green-600 font-medium">
+                        Saved ✓
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Enter phone number"
+                      className="flex-1 border rounded px-3 py-2 text-sm"
+                    />
+
+                    <button
+                      onClick={savePhoneNumber}
+                      className={`px-4 py-2 rounded ${PALETTE.ACCENT_BG} text-sm`}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+
+                {/* ADDRESS */}
+                <h3 className="font-medium mb-2">Delivery Address</h3>
+
                 {user?.addresses?.length ? (
                   <div className="space-y-3">
                     {user.addresses.map((addr, i) => (
                       <label
                         key={i}
-                        className={`block border p-3 rounded cursor-pointer flex items-start gap-3 ${selectedAddressIndex == i ? `ring-2 ${PALETTE.BORDER}` : ""}`}
+                        className={`block border p-3 rounded cursor-pointer flex items-start gap-3 ${
+                          selectedAddressIndex == i
+                            ? `ring-2 ${PALETTE.BORDER}`
+                            : ""
+                        }`}
                       >
                         <input
                           type="radio"
@@ -384,10 +458,11 @@ export default function CartPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 mb-2">
                     No saved addresses.
                   </div>
                 )}
+
                 <div className="mt-4 flex gap-3">
                   <button
                     onClick={() => setAddressModalOpen(true)}
@@ -395,6 +470,7 @@ export default function CartPage() {
                   >
                     + Add New Address
                   </button>
+
                   <button
                     onClick={() => setStep(1)}
                     className="px-4 py-2 rounded border"
@@ -483,11 +559,17 @@ export default function CartPage() {
                 )}
                 {step === 2 && (
                   <button
-                    onClick={() =>
-                      user?.addresses?.length > 0
-                        ? setStep(3)
-                        : toast.error("Add address")
-                    }
+                    onClick={() => {
+                      if (!phoneNumber || phoneNumber.trim() === "") {
+                        return toast.error("Add phone number");
+                      }
+
+                      if (!user?.addresses?.length) {
+                        return toast.error("Add address");
+                      }
+
+                      setStep(3);
+                    }}
                     className={`w-full px-4 py-2 rounded ${PALETTE.ACCENT_BG}`}
                   >
                     Continue to Payment

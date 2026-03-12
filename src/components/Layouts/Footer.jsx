@@ -8,11 +8,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// You can import these from the navbar file instead if you want to keep
-// them in a single place.
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Products", href: "/products", mega: true },
+  { name: "Products", href: "/products" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
 ];
@@ -34,147 +32,104 @@ const megaMenuData = [
 
 const Footer = () => {
   const footerRef = useRef(null);
-  const waveRef = useRef(null);
 
   useEffect(() => {
-    if (!footerRef.current) return;
-
     const ctx = gsap.context(() => {
-      // Scroll reveal for columns
       gsap.from(".footer-column", {
         scrollTrigger: {
           trigger: footerRef.current,
-          start: "top 80%", // when footer top hits 80% viewport
+          start: "top 85%",
         },
         y: 40,
         opacity: 0,
-        stagger: 0.12,
+        stagger: 0.15,
         duration: 0.7,
         ease: "power3.out",
       });
-
-      // Subtle floating / liquid feel on the wave
-      if (waveRef.current) {
-        gsap.to(waveRef.current, {
-          y: 10,
-          duration: 3,
-          ease: "sine.inOut",
-          repeat: -1,
-          yoyo: true,
-        });
-      }
     }, footerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative mt-16 text-[#2f1b0d]">
-      {/* Liquid / wave top border */}
-      {/* <div className="w-full overflow-hidden">
-        <svg
-          ref={waveRef}
-          className="w-full h-10 md:h-14"
-          viewBox="0 0 1440 320"
-          preserveAspectRatio="none"
-        >
-          <path
-            fill="#FAF0E6"
-            d="M0,160L80,165.3C160,171,320,181,480,186.7C640,192,800,192,960,181.3C1120,171,1280,149,1360,138.7L1440,128L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z"
-          />
-        </svg>
-      </div> */}
-
-      {/* Main footer body */}
-      <div className="bg-[#FAF0E6] border-t border-[#DEB887]/70">
-        <div className="max-w-7xl mx-auto px-6 py-10 md:py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="footer-column flex flex-col gap-4">
+    <footer ref={footerRef} className="mt-20 text-[#2f1b0d]">
+      <div className="bg-[#FAF0E6] border-t border-[#DEB887]/60">
+        <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+          {/* BRAND */}
+          <div className="footer-column space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 overflow-hidden flex items-center justify-center ">
-                <Image
-                  src="/assets/logo.png"
-                  alt="Branded Collection Logo"
-                  width={48}
-                  height={48}
-                  className="object-contain"
-                />
-              </div>
+              <Image
+                src="/assets/logo.png"
+                alt="Branded Collection Logo"
+                width={45}
+                height={45}
+              />
+
               <div>
-                <p className="font-semibold text-lg tracking-wide">
-                  Branded Collection
-                </p>
+                <p className="font-semibold text-lg">Branded Collection</p>
                 <p className="text-xs text-gray-600">
-                  Premium fits, everyday comfort.
+                  Premium fits, everyday comfort
                 </p>
               </div>
             </div>
 
-            <p className="text-sm text-gray-700 leading-relaxed max-w-xs">
-              Discover shirts, tees and denim that actually feel as good as they
-              look. Crafted for all-day wear, from office hours to late nights.
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Discover shirts, tees and denim crafted for comfort and style —
+              perfect for work, travel and everyday life.
             </p>
 
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                Follow us
-              </span>
-              <div className="flex gap-3 text-[#654321]">
-                {/* Simple social icons using circles */}
-                <button className="w-8 h-8 rounded-full border border-[#DEB887] flex items-center justify-center text-xs hover:bg-[#654321] hover:text-[#FAF0E6] transition">
-                  in
-                </button>
-                <button className="w-8 h-8 rounded-full border border-[#DEB887] flex items-center justify-center text-xs hover:bg-[#654321] hover:text-[#FAF0E6] transition">
-                  f
-                </button>
-                <button className="w-8 h-8 rounded-full border border-[#DEB887] flex items-center justify-center text-xs hover:bg-[#654321] hover:text-[#FAF0E6] transition">
-                  ig
-                </button>
+            <div className="flex gap-3 pt-2">
+              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
+                f
+              </div>
+              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
+                ig
+              </div>
+              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
+                in
               </div>
             </div>
           </div>
 
-          {/* Main links (from navbar) */}
+          {/* NAVIGATION */}
           <div className="footer-column">
-            <h3 className="text-sm font-semibold tracking-[0.2em] uppercase text-gray-500 mb-3">
+            <h3 className="text-sm font-semibold tracking-widest uppercase text-gray-500 mb-4">
               Navigation
             </h3>
+
             <ul className="space-y-2">
               {navLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-800 hover:text-[#654321] relative inline-block group"
+                    className="text-sm text-gray-700 hover:text-[#654321] transition"
                   >
-                    <span>{link.name}</span>
-                    <span className="block h-[2px] w-0 bg-[#654321] rounded-full group-hover:w-full transition-all duration-300 origin-left"></span>
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Categories (from mega menu) */}
+          {/* CATEGORIES */}
           <div className="footer-column">
-            <h3 className="text-sm font-semibold tracking-[0.2em] uppercase text-gray-500 mb-3">
+            <h3 className="text-sm font-semibold tracking-widest uppercase text-gray-500 mb-4">
               Categories
             </h3>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+
+            <div className="grid grid-cols-3 gap-6">
               {megaMenuData.map((cat) => (
                 <div key={cat.title}>
-                  <p className="font-semibold text-[#654321] mb-1">
+                  <p className="text-sm font-semibold text-[#654321]">
                     {cat.title}
                   </p>
-                  <ul className="space-y-1">
+
+                  <ul className="space-y-1 mt-1">
                     {cat.sub.map((s) => (
                       <li key={s}>
                         <Link
-                          href={`/products/${cat.title
-                            .toLowerCase()
-                            .replace(/ /g, "-")}/${s
-                            .toLowerCase()
-                            .replace(/ /g, "-")}`}
-                          className="text-gray-700 hover:text-[#654321] text-xs"
+                          href="#"
+                          className="text-xs text-gray-700 hover:text-[#654321]"
                         >
                           {s}
                         </Link>
@@ -185,53 +140,17 @@ const Footer = () => {
               ))}
             </div>
           </div>
-
-          {/* Newsletter */}
-          <div className="footer-column">
-            <h3 className="text-sm font-semibold tracking-[0.2em] uppercase text-gray-500 mb-3">
-              Stay in the loop
-            </h3>
-            <p className="text-sm text-gray-700 mb-4">
-              Get early access to drops, exclusive offers and style tips.
-            </p>
-            {/* <form
-              onSubmit={(e) => e.preventDefault()}
-              className="flex flex-col gap-3 max-w-sm"
-            >
-              <div className="flex items-center rounded-full bg-white border border-[#DEB887]/70 px-3 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.04)]">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 text-sm outline-none bg-transparent placeholder:text-gray-400"
-                />
-                <button
-                  type="submit"
-                  className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#654321] text-[#FAF0E6] hover:bg-[#4f3418] transition"
-                >
-                  Join
-                </button>
-              </div>
-              <p className="text-[11px] text-gray-500">
-                By joining, you agree to receive emails from Branded Collection.
-              </p>
-            </form> */}
-          </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-[#DEB887]/60">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+        {/* BOTTOM BAR */}
+        <div className="border-t border-[#DEB887]/50">
+          <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between text-xs text-gray-600 gap-2">
             <p>
               © {new Date().getFullYear()} Branded Collection. All rights
               reserved.
             </p>
-            <div className="flex gap-4">
-              <button className="hover:text-[#654321]">Privacy Policy</button>
-              <button className="hover:text-[#654321]">Terms</button>
-              <button className="hover:text-[#654321]">
-                Returns & Refunds
-              </button>
-            </div>
+
+            <p className="text-gray-500">Designed & Developed with ❤️</p>
           </div>
         </div>
       </div>

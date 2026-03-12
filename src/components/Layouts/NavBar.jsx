@@ -775,13 +775,13 @@ const NavBar = () => {
           {navLinks.map((l) => (
             <SidebarContent key={l.name} link={l} />
           ))}
-          <Link
+          {/* <Link
             href="/about-us"
             onClick={handleLinkClick}
             className={`block py-4 px-4 font-bold text-lg ${PALETTE.TEXT_PRIMARY} border-b ${PALETTE.BORDER_ACCENT}`}
           >
             About Us
-          </Link>
+          </Link> */}
 
           <Link
             href="/contact-us"
