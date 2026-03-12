@@ -4,11 +4,7 @@ export const revalidate = 0;
 
 import { NextResponse } from "next/server";
 import Product from "@/models/Products";
-import {
-  saveImage,
-  deleteImage,
-  deleteProductFolder,
-} from "@/lib/localImagesStorage";
+import { saveImage, deleteImage } from "@/lib/localImagesStorage";
 import { connectDb } from "@/lib/dbConnect";
 
 /** ---------- GET PRODUCTS ---------- */
