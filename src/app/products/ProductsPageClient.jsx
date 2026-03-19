@@ -73,7 +73,7 @@ const slides = [
 
 export default function ProductsPageClient() {
   const searchParams = useSearchParams();
-
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   /* ---------- STATE ---------- */
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
@@ -360,7 +360,14 @@ export default function ProductsPageClient() {
             </h1>
             <div className="h-1 w-20 bg-[#654321] mt-2 rounded-full"></div>
           </div>
-
+          <div className="flex md:hidden mb-4">
+            <button
+              onClick={() => setMobileFiltersOpen(true)}
+              className="px-4 py-2 bg-[#654321] text-white rounded-md text-sm"
+            >
+              Filters
+            </button>
+          </div>
           <InfiniteScroll
             dataLength={products.length}
             next={loadMore}
@@ -378,6 +385,126 @@ export default function ProductsPageClient() {
             <p className="text-center py-10 text-gray-500">
               No products found for these filters.
             </p>
+          )}
+          {mobileFiltersOpen && (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:hidden">
+              <div className="bg-white w-full rounded-t-xl max-h-[80vh] overflow-y-auto p-5">
+                <div className="flex justify-between mb-4">
+                  <h3 className="font-bold text-lg">Filters</h3>
+                  <button onClick={() => setMobileFiltersOpen(false)}>
+                    Close
+                  </button>
+                </div>
+
+                {/* SAME FILTER BLOCKS */}
+                <div className="space-y-6">
+                  {/* CATEGORY */}
+                  {allCategories.length > 0 && (
+                    <FilterBlock title="Category">
+                      <div className="flex flex-wrap gap-2">
+                        {visibleCategories.map((c) => (
+                          <FilterChip
+                            key={c}
+                            active={filters.category.includes(c)}
+                            onClick={() =>
+                              setFilters((p) => ({
+                                ...p,
+                                category: p.category.includes(c) ? [] : [c],
+                                subcategory: "",
+                              }))
+                            }
+                          >
+                            {c}
+                          </FilterChip>
+                        ))}
+                      </div>
+                    </FilterBlock>
+                  )}
+
+                  {/* SUBCATEGORY */}
+                  {allSubcategories.length > 0 && (
+                    <FilterBlock title="Sub Category">
+                      <div className="flex flex-wrap gap-2">
+                        {visibleSubcategories.map((s) => (
+                          <FilterChip
+                            key={s}
+                            active={filters.subcategory === s}
+                            onClick={() =>
+                              setFilters((p) => ({
+                                ...p,
+                                subcategory: p.subcategory === s ? "" : s,
+                              }))
+                            }
+                          >
+                            {s}
+                          </FilterChip>
+                        ))}
+                      </div>
+                    </FilterBlock>
+                  )}
+
+                  {/* BRAND */}
+                  <FilterBlock title="Brand">
+                    <FilterChip
+                      active={filters.brand === "Branded Collection"}
+                      onClick={() =>
+                        setFilters((p) => ({
+                          ...p,
+                          brand:
+                            p.brand === "Branded Collection"
+                              ? ""
+                              : "Branded Collection",
+                        }))
+                      }
+                    >
+                      Branded Collection
+                    </FilterChip>
+                  </FilterBlock>
+
+                  {/* SIZE */}
+                  {filters.mainCategory !== "accessories" && (
+                    <FilterBlock title="Size">
+                      <div className="flex flex-wrap gap-2">
+                        {SIZE_OPTIONS.map((s) => (
+                          <FilterChip
+                            key={s}
+                            active={filters.size === s}
+                            onClick={() =>
+                              setFilters((p) => ({
+                                ...p,
+                                size: p.size === s ? "" : s,
+                              }))
+                            }
+                          >
+                            {s}
+                          </FilterChip>
+                        ))}
+                      </div>
+                    </FilterBlock>
+                  )}
+
+                  {/* PRICE */}
+                  <FilterBlock title="Price">
+                    <input
+                      type="range"
+                      min="0"
+                      max="5000"
+                      value={filters.price[1]}
+                      onChange={(e) =>
+                        setFilters((p) => ({
+                          ...p,
+                          price: [0, Number(e.target.value)],
+                        }))
+                      }
+                      className="w-full accent-[#654321]"
+                    />
+                    <p className="text-sm mt-2 font-medium">
+                      Up to ₹{filters.price[1]}
+                    </p>
+                  </FilterBlock>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

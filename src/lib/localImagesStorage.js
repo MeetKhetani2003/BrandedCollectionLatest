@@ -29,3 +29,11 @@ export function deleteImage(relativePath) {
 
   if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 }
+
+export function deleteProductFolder(productId) {
+  const folderPath = path.join(BASE_UPLOAD_DIR, productId);
+
+  if (fs.existsSync(folderPath)) {
+    fs.rmSync(folderPath, { recursive: true, force: true });
+  }
+}

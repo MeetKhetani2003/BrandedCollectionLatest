@@ -4,9 +4,12 @@ export const revalidate = 0;
 
 import { NextResponse } from "next/server";
 import Product from "@/models/Products";
-import { saveImage, deleteImage } from "@/lib/localImagesStorage";
 import { connectDb } from "@/lib/dbConnect";
-
+import {
+  saveImage,
+  deleteImage,
+  deleteProductFolder,
+} from "@/lib/localImagesStorage";
 /** ---------- GET PRODUCTS ---------- */
 export async function GET(req) {
   await connectDb();
