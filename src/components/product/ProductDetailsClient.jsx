@@ -82,7 +82,17 @@ export default function ProductDetailsClient({ product }) {
 
   const isAccessory = product.mainCategory === "accessories";
 
+  // Check if product is out of stock
+  const totalStock =
+    product.sizes?.reduce((sum, s) => sum + (s.quantity || 0), 0) || 0;
+  const isOutOfStock = totalStock === 0;
+
   const handleAddToCart = () => {
+    if (isOutOfStock) {
+      toast.error("This product is currently out of stock");
+      return;
+    }
+
     if (!isLoggedIn) return requireLogin();
 
     if (isAccessory) {
@@ -285,13 +295,29 @@ export default function ProductDetailsClient({ product }) {
             </div>
           )}
 
+          {isOutOfStock && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <p className="text-red-600 font-semibold text-lg">
+                🔴 Out of Stock
+              </p>
+              <p className="text-red-500 text-sm mt-1">
+                This product is currently unavailable
+              </p>
+            </div>
+          )}
+
           {!added ? (
             <button
               onClick={handleAddToCart}
-              className={`${PALETTE.ACCENT} w-full py-3 text-white rounded`}
+              disabled={isOutOfStock}
+              className={`w-full py-3 rounded transition-all ${
+                isOutOfStock
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : `${PALETTE.ACCENT} text-white ${PALETTE.HOVER}`
+              }`}
             >
               <ShoppingBag className="inline w-5 h-5 mr-2" />
-              Add To Bag
+              {isOutOfStock ? "Out of Stock" : "Add To Bag"}
             </button>
           ) : (
             <button
@@ -305,6 +331,10 @@ export default function ProductDetailsClient({ product }) {
 
           <button
             onClick={() => {
+              if (isOutOfStock) {
+                toast.error("This product is currently out of stock");
+                return;
+              }
               if (!isLoggedIn) return requireLogin();
               if (!isAccessory && !selectedSize) {
                 toast.error("Select a size first 👕");
@@ -312,9 +342,14 @@ export default function ProductDetailsClient({ product }) {
               }
               setBuyNowOpen(true);
             }}
-            className="w-full py-3 border rounded"
+            disabled={isOutOfStock}
+            className={`w-full py-3 border rounded transition-all ${
+              isOutOfStock
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "hover:bg-gray-50"
+            }`}
           >
-            Buy Now
+            {isOutOfStock ? "Out of Stock" : "Buy Now"}
           </button>
 
           <div>

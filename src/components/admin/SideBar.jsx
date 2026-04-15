@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menu = [
-  { name: "Dashboard", href: "/admin" },
-  { name: "Products", href: "/admin/products" },
-  { name: "Users", href: "/admin/users" },
-  { name: "Orders", href: "/admin/orders" },
-  { name: "Coupons", href: "/admin/coupons" },
-  { name: "Inquiries", href: "/admin/inquiries" },
+  { name: "Dashboard", href: "/operator" },
+  { name: "Products", href: "/operator/products" },
+  { name: "Users", href: "/operator/users" },
+  { name: "Orders", href: "/operator/orders" },
+  { name: "Coupons", href: "/operator/coupons" },
+  { name: "Inquiries", href: "/operator/inquiries" },
 ];
 
 export default function AdminSidebar() {
@@ -19,7 +19,7 @@ export default function AdminSidebar() {
     <aside className="w-64 min-h-screen bg-white border-r border-[#ead7c5]">
       {/* Logo */}
       <div className="px-6 py-5 text-xl font-bold text-[#4a2e1f] border-b border-[#ead7c5]">
-        Admin Panel
+        Operator Panel
       </div>
 
       {/* Menu */}

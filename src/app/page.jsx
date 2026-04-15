@@ -9,9 +9,9 @@ import Hero from "@/components/Home/Hero";
 
 const Home = async () => {
   const slides = [
-    { type: "image", url: "/assets/CarouselAssets/banner1.avif" },
-    { type: "video", url: "/assets/CarouselAssets/video1.mp4" },
-    { type: "image", url: "/assets/CarouselAssets/banner2.avif" },
+    { type: "image", url: "/assets/CarouselAssets/banner1.png" },
+    { type: "image", url: "/assets/CarouselAssets/banner2.png" },
+    { type: "image", url: "/assets/CarouselAssets/banner3.png" },
   ];
 
   return (

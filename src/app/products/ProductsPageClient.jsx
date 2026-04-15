@@ -65,10 +65,44 @@ const CATEGORY_MAP = {
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const PAGE_SIZE = 12;
 
+const MAIN_CATEGORY_ALIASES = {
+  footwear: "shoes",
+  clothes: "clothes",
+  shoes: "shoes",
+  accessories: "accessories",
+};
+
+const slugify = (value) =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const resolveCategoryName = (mainCategory, categoryParam) => {
+  const categories = Object.keys(CATEGORY_MAP[mainCategory] || {});
+  return (
+    categories.find((cat) => slugify(cat) === slugify(categoryParam)) ||
+    categoryParam
+  );
+};
+
+const resolveSubcategoryName = (mainCategory, category, subcategoryParam) => {
+  const subcategories = category
+    ? CATEGORY_MAP[mainCategory]?.[category] || []
+    : Object.values(CATEGORY_MAP[mainCategory] || {}).flat();
+  return (
+    subcategories.find((sub) => slugify(sub) === slugify(subcategoryParam)) ||
+    subcategoryParam
+  );
+};
+
 const slides = [
-  { type: "image", url: "/assets/CarouselAssets/banner1.avif" },
-  { type: "video", url: "/assets/CarouselAssets/video1.mp4" },
-  { type: "image", url: "/assets/CarouselAssets/banner2.avif" },
+  { type: "image", url: "/assets/CarouselAssets/banner1.png" },
+  { type: "image", url: "/assets/CarouselAssets/banner2.png" },
+  { type: "image", url: "/assets/CarouselAssets/banner3.png" },
 ];
 
 export default function ProductsPageClient() {
@@ -84,17 +118,24 @@ export default function ProductsPageClient() {
   const [showAllSubs, setShowAllSubs] = useState(false);
 
   const rawMainCategory = searchParams.get("mainCategory") || "";
-  const urlMainCategory = ["clothes", "shoes", "accessories"].includes(
-    rawMainCategory.toLowerCase(),
-  )
-    ? rawMainCategory.toLowerCase()
-    : "";
+  const rawCategory = searchParams.get("category") || "";
+  const rawSubcategory = searchParams.get("subcategory") || "";
+
+  const urlMainCategory =
+    MAIN_CATEGORY_ALIASES[rawMainCategory.toLowerCase()] || "";
+
+  const resolvedCategory = resolveCategoryName(urlMainCategory, rawCategory);
+  const resolvedSubcategory = resolveSubcategoryName(
+    urlMainCategory,
+    resolvedCategory,
+    rawSubcategory,
+  );
 
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     mainCategory: urlMainCategory,
-    category: [],
-    subcategory: "",
+    category: resolvedCategory ? [resolvedCategory] : [],
+    subcategory: resolvedSubcategory,
     size: searchParams.get("size") || "",
     brand: "",
     discountOnly: false,
@@ -106,10 +147,10 @@ export default function ProductsPageClient() {
     setFilters((prev) => ({
       ...prev,
       mainCategory: urlMainCategory,
-      category: [],
-      subcategory: "",
+      category: resolvedCategory ? [resolvedCategory] : [],
+      subcategory: resolvedSubcategory,
     }));
-  }, [urlMainCategory]);
+  }, [urlMainCategory, resolvedCategory, resolvedSubcategory]);
 
   /* ---------- FILTER LOGIC DATA ---------- */
   const mainCategoryMap = CATEGORY_MAP[filters.mainCategory] || {};

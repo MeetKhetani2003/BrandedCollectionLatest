@@ -147,50 +147,97 @@ export default function CheckoutPage() {
 
     const selected = user.addresses[selectedAddress];
 
-    const orderRes = await fetch("/api/checkout/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: total }),
-    });
+    try {
+      // ✅ STEP 1: Create reservation (locks stock for 15 minutes)
+      const reservationRes = await fetch("/api/reservation", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cart,
+          amount: total,
+          address: {
+            ...selected,
+            phone: user.number,
+          },
+        }),
+      });
 
-    const order = await orderRes.json();
+      const reservationData = await reservationRes.json();
 
-    if (!order.id) return toast.error("Payment gateway error!");
+      if (!reservationData.success) {
+        toast.error(reservationData.message || "Failed to reserve items");
+        return;
+      }
 
-    const razor = new window.Razorpay({
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-      amount: order.amount,
-      currency: "INR",
-      order_id: order.id,
-      name: "Branded Collection",
+      // ✅ STEP 2: Open Razorpay with reservation ID
+      const razor = new window.Razorpay({
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+        amount: reservationData.amount * 100, // Convert to paise
+        currency: "INR",
+        order_id: reservationData.razorpayOrderId,
+        name: "Branded Collection",
+        prefill: {
+          name: user.firstName || user.username || "",
+          contact: user.number || "",
+        },
 
-      handler: async function (response) {
-        const verifyRes = await fetch("/api/checkout/verify-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            userId: user._id,
-            cart,
-            amount: total,
-            address: selected,
-          }),
-        });
+        handler: async function (response) {
+          // ✅ STEP 3: Verify payment with reservation ID
+          const verifyRes = await fetch("/api/checkout/verify-payment", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              reservationId: reservationData.reservationId,
+            }),
+          });
 
-        const verifyData = await verifyRes.json();
+          const verifyData = await verifyRes.json();
 
-        if (verifyData.success) {
-          toast.success("Payment Successful 🎉");
-          window.location.href = "/checkout/success";
-        } else {
-          toast.error("Payment Failed");
-        }
-      },
-    });
+          if (verifyData.success) {
+            toast.success("Payment Successful 🎉");
+            window.location.href = "/checkout/success";
+          } else {
+            // ✅ Payment failed - cancel reservation and restore stock
+            await fetch(
+              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+            toast.error(
+              verifyData.message || "Payment failed. Stock restored.",
+            );
+            await fetchCart(); // Refresh cart
+          }
+        },
 
-    razor.open();
+        modal: {
+          ondismiss: async function () {
+            // ✅ User closed payment modal - cancel reservation
+            await fetch(
+              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+            toast.error("Payment cancelled. Stock restored.");
+            await fetchCart(); // ✅ Refresh cart to show updated stock
+          },
+        },
+      });
+
+      razor.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error("Payment failed. Please try again.");
+    }
   };
 
   if (!cart.length)
@@ -299,7 +346,6 @@ export default function CheckoutPage() {
           <div className="space-y-6">
             <div className="bg-white border rounded-xl p-4 shadow-sm space-y-3">
               <p className="font-semibold">Phone Number</p>
-
               {!phoneNumber ? (
                 <div className="flex gap-2">
                   <input

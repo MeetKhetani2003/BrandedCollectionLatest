@@ -50,6 +50,7 @@ const orderSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     paymentId: String,
     status: { type: String, default: "paid" },
+    orderStatus: { type: String, default: "orderPlaced" },
   },
   { timestamps: true },
 );

@@ -49,6 +49,11 @@ export default function ProductCard({ product }) {
 
   const addToCart = useCartStore((s) => s.addToCart);
 
+  // Check if product is out of stock
+  const totalStock =
+    product.sizes?.reduce((sum, s) => sum + (s.quantity || 0), 0) || 0;
+  const isOutOfStock = totalStock === 0;
+
   const requireLogin = () => {
     toast.error("Login first to continue 🔐");
     router.push("/auth");
@@ -129,6 +134,15 @@ export default function ProductCard({ product }) {
               }`}
             />
           </button>
+
+          {/* ---------- OUT OF STOCK BADGE ---------- */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+              <span className=" text-white bg-red-600 font-bold text-lg px-6 py-3 rounded-lg shadow-xl">
+                OUT OF STOCK
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ---------- DETAILS ---------- */}
@@ -153,6 +167,11 @@ export default function ProductCard({ product }) {
               onClick={(e) => {
                 e.stopPropagation();
 
+                if (isOutOfStock) {
+                  toast.error("This product is currently out of stock");
+                  return;
+                }
+
                 if (!isLoggedIn) return requireLogin();
 
                 if (product.mainCategory === "accessories") {
@@ -161,9 +180,14 @@ export default function ProductCard({ product }) {
                   setShowSizeModal(true);
                 }
               }}
-              className="px-4 py-2 rounded-full bg-[#654321] text-white text-sm hover:bg-[#4a3219]"
+              disabled={isOutOfStock}
+              className={`px-4 py-2 rounded-full text-sm transition-all ${
+                isOutOfStock
+                  ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                  : "bg-[#654321] text-white hover:bg-[#4a3219]"
+              }`}
             >
-              Add
+              {isOutOfStock ? "Out of Stock" : "Add"}
             </button>
           </div>
         </div>

@@ -5,29 +5,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { categories } from "@/data/Categories";
+import { FiFacebook, FiInstagram, FiLinkedin } from "react-icons/fi";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Products", href: "/products" },
-  { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
-];
-
-const megaMenuData = [
-  {
-    title: "Shirts",
-    sub: ["Casual Shirts", "Formal Shirts", "Denim Shirts", "Partywear Shirts"],
-  },
-  {
-    title: "T-Shirts",
-    sub: ["Oversized", "Graphics", "Plain", "Henley"],
-  },
-  {
-    title: "Jeans",
-    sub: ["Slim Fit", "Straight Fit", "Baggy", "Ripped Denim"],
-  },
+  { name: "Clothes", href: "/products?mainCategory=clothes" },
+  { name: "Accessories", href: "/products?mainCategory=accessories" },
+  { name: "Shoes", href: "/products?mainCategory=shoes" },
+  { name: "Contact", href: "/contact-us" },
 ];
 
 const Footer = () => {
@@ -79,15 +67,26 @@ const Footer = () => {
             </p>
 
             <div className="flex gap-3 pt-2">
-              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
-                f
-              </div>
-              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
-                ig
-              </div>
-              <div className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer">
-                in
-              </div>
+              <Link
+                href={"https://www.instagram.com/branded_collection_rajkot/"}
+                className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer"
+              >
+                <FiFacebook />
+              </Link>
+              <Link
+                href={"https://www.facebook.com/branded_collection_rajkot/"}
+                className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer"
+              >
+                <FiInstagram />
+              </Link>
+              <Link
+                href={
+                  "https://www.linkedin.com/company/branded_collection_rajkot/"
+                }
+                className="w-8 h-8 flex items-center justify-center border border-[#DEB887] rounded-full hover:bg-[#654321] hover:text-white transition cursor-pointer"
+              >
+                <FiLinkedin />
+              </Link>
             </div>
           </div>
 
@@ -117,28 +116,18 @@ const Footer = () => {
               Categories
             </h3>
 
-            <div className="grid grid-cols-3 gap-6">
-              {megaMenuData.map((cat) => (
-                <div key={cat.title}>
-                  <p className="text-sm font-semibold text-[#654321]">
+            <ul className="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2 ">
+              {categories.map((cat) => (
+                <li key={cat.title}>
+                  <Link
+                    href={cat.href}
+                    className="text-sm text-gray-700 hover:text-[#654321] transition"
+                  >
                     {cat.title}
-                  </p>
-
-                  <ul className="space-y-1 mt-1">
-                    {cat.sub.map((s) => (
-                      <li key={s}>
-                        <Link
-                          href="#"
-                          className="text-xs text-gray-700 hover:text-[#654321]"
-                        >
-                          {s}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
 

@@ -612,13 +612,32 @@ function OrdersTab({
                     </p>
                     <p className="text-sm font-bold">₹{order.amount}</p>
                   </div>
-                  <div className="w-24">
-                    <span
-                      className={`text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border 
-                      ${order.status === "paid" ? "bg-green-50 text-green-700 border-green-100" : "bg-yellow-50 text-yellow-700 border-yellow-100"}`}
-                    >
-                      {order.status}
-                    </span>
+                  <div className="w-32">
+                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">
+                      Status
+                    </p>
+                    {!order.awbNumber ? (
+                      <span className="inline-block text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border bg-purple-50 text-purple-700 border-purple-100">
+                        Order Placed
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-block text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border
+                        ${
+                          order.tracking?.raw?.OpStatus?.startsWith("FAILED")
+                            ? "bg-red-50 text-red-700 border-red-100"
+                            : order.tracking?.status
+                                  ?.toUpperCase()
+                                  .includes("DELIVERED")
+                              ? "bg-green-50 text-green-700 border-green-100"
+                              : "bg-blue-50 text-blue-700 border-blue-100"
+                        }`}
+                      >
+                        {order.tracking?.raw?.OpStatus?.startsWith("FAILED")
+                          ? "Invalid AWB"
+                          : order.tracking?.status || "In Transit"}
+                      </span>
+                    )}
                   </div>
                   {openOrders[order._id] ? (
                     <ChevronUp size={18} />
@@ -629,6 +648,61 @@ function OrdersTab({
 
                 {openOrders[order._id] && (
                   <div className="bg-[#fcfaf8] px-6 py-6 border-t border-[#ead7c5]/30 animate-in slide-in-from-top-2 duration-300">
+                    {/* Tracking Details */}
+                    {order.awbNumber && order.tracking && (
+                      <div className="mb-6 p-4 bg-white border border-[#ead7c5] rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-[10px] font-bold opacity-50 uppercase tracking-widest">
+                            Tracking Details
+                          </p>
+                          {order.tracking.lastFetchedAt && (
+                            <p className="text-[9px] opacity-40">
+                              Updated:{" "}
+                              {new Date(
+                                order.tracking.lastFetchedAt,
+                              ).toLocaleString("en-GB")}
+                            </p>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">
+                              AWB Number
+                            </p>
+                            <p className="font-mono font-bold">
+                              {order.awbNumber}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">
+                              Status
+                            </p>
+                            <span
+                              className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border inline-block
+                              ${
+                                order.tracking.raw?.OpStatus?.startsWith(
+                                  "FAILED",
+                                )
+                                  ? "bg-red-50 text-red-700 border-red-100"
+                                  : order.tracking.status
+                                        ?.toUpperCase()
+                                        .includes("DELIVERED")
+                                    ? "bg-green-50 text-green-700 border-green-100"
+                                    : "bg-blue-50 text-blue-700 border-blue-100"
+                              }`}
+                            >
+                              {order.tracking.raw?.OpStatus?.startsWith(
+                                "FAILED",
+                              )
+                                ? "Invalid AWB"
+                                : order.tracking.status || "In Transit"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Items */}
                     <div className="space-y-4">
                       {order.items.map((item) => (
                         <div

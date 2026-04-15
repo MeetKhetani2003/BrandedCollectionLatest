@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 
 /* --------------------------------- */
 /* -------- DASHBOARD -------------- */
 /* --------------------------------- */
 
-export default function AdminPage() {
+export default function OperatorPage() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -19,9 +19,8 @@ export default function AdminPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Change this line in your AdminPage useEffect
         const [u, p, o] = await Promise.all([
-          fetch("/api/user?limit=1000").then((r) => r.json()), // Add a high limit
+          fetch("/api/user?limit=1000").then((r) => r.json()),
           fetch("/api/products?limit=10000").then((r) => r.json()),
           fetch("/api/order?limit=1000").then((r) => r.json()),
         ]);

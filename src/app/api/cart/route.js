@@ -5,6 +5,7 @@ import User from "@/models/User";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+
 /**
  * GET /api/cart
  */
@@ -21,7 +22,7 @@ export async function GET() {
   await connectDb();
 
   const populatedUser = await User.findById(decoded.userId).populate(
-    "cart.product"
+    "cart.product",
   );
   const items = populatedUser.cart.map((item) => ({
     _id: item.product._id,
@@ -49,7 +50,7 @@ export async function POST(req) {
     if (!token) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -60,8 +61,39 @@ export async function POST(req) {
 
     if (!user) return NextResponse.json({ success: false }, { status: 404 });
 
+    // ✅ STOCK VALIDATION: Check if product has enough stock
+    const product = await Products.findById(productId);
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, message: "Product not found" },
+        { status: 404 },
+      );
+    }
+
+    // Find the size entry
+    const sizeEntry = product.sizes?.find((s) => s.size === size);
+
+    if (!sizeEntry) {
+      return NextResponse.json(
+        { success: false, message: `Size ${size} not available` },
+        { status: 400 },
+      );
+    }
+
+    // Check if requested quantity is available
+    if (sizeEntry.quantity < qty) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Only ${sizeEntry.quantity} item(s) available in stock for size ${size}`,
+        },
+        { status: 400 },
+      );
+    }
+
     const exists = user.cart.find(
-      (i) => i.product.toString() === productId && i.size === size
+      (i) => i.product.toString() === productId && i.size === size,
     );
 
     if (exists) {
@@ -78,7 +110,7 @@ export async function POST(req) {
 
     return NextResponse.json(
       { success: false, message: err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -103,19 +135,38 @@ export async function PATCH(request) {
   if (!productId || typeof qty !== "number")
     return NextResponse.json(
       { message: "productId & qty required" },
-      { status: 400 }
+      { status: 400 },
     );
 
   const index = user.cart.findIndex(
     (item) =>
-      item.product.toString() === productId && item.size === selectedSize
+      item.product.toString() === productId && item.size === selectedSize,
   );
 
   if (index === -1)
     return NextResponse.json({ message: "Item not found" }, { status: 404 });
 
-  if (qty <= 0) user.cart.splice(index, 1);
-  else user.cart[index].qty = qty;
+  if (qty <= 0) {
+    user.cart.splice(index, 1);
+  } else {
+    // ✅ STOCK VALIDATION: Check if product has enough stock for increased quantity
+    const product = await Products.findById(productId);
+
+    if (product) {
+      const sizeEntry = product.sizes?.find((s) => s.size === selectedSize);
+
+      if (sizeEntry && sizeEntry.quantity < qty) {
+        return NextResponse.json(
+          {
+            message: `Only ${sizeEntry.quantity} item(s) available in stock for size ${selectedSize}`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    user.cart[index].qty = qty;
+  }
 
   await user.save();
 
@@ -144,12 +195,12 @@ export async function DELETE(request) {
   if (!productId)
     return NextResponse.json(
       { message: "productId required" },
-      { status: 400 }
+      { status: 400 },
     );
 
   user.cart = user.cart.filter(
     (item) =>
-      !(item.product.toString() === productId && item.size === selectedSize)
+      !(item.product.toString() === productId && item.size === selectedSize),
   );
 
   await user.save();

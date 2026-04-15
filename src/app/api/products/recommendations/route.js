@@ -12,7 +12,7 @@ export async function GET(req) {
   if (!id) {
     return NextResponse.json(
       { message: "Product ID required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -75,7 +75,7 @@ export async function GET(req) {
       const common = productSizes.filter((s) => currentSizes.includes(s));
       score += Math.min(
         common.length * WEIGHTS.sizeOverlap,
-        WEIGHTS.sizeOverlap
+        WEIGHTS.sizeOverlap,
       );
     }
 
@@ -84,6 +84,7 @@ export async function GET(req) {
 
   /* ---------------- FINAL RESULT ---------------- */
   const recommendations = products
+    .filter((p) => p._id.toString() !== id)
     .map((p) => ({ ...p, _score: scoreProduct(p) }))
     .filter((p) => p._score > 0)
     .sort((a, b) => b._score - a._score)

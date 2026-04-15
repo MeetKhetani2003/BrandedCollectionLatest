@@ -234,7 +234,7 @@ export default function ContactUs() {
         <div className="lg:w-[45%] relative min-h-[600px] lg:min-h-screen">
           <div className="absolute inset-0 grayscale contrast-[1.2] invert opacity-80">
             <iframe
-              src="https://www.google.com/maps?q=india&output=embed"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.379769310299!2d70.763769!3d22.301472699999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3959c9c263d692f3%3A0x15842fb2c71910b2!2sBranded_Collection_Rajkot!5e0!3m2!1sen!2sin!4v1776230661220!5m2!1sen!2sin"
               className="w-full h-full object-cover border-none"
               loading="lazy"
             />
@@ -250,11 +250,14 @@ export default function ContactUs() {
                 <span className="text-[10px] tracking-widest text-[#DEB887] font-bold">
                   // HQ_STATION
                 </span>
-                <h3 className="text-2xl font-bold mt-2">ATELIER_MUMBAI</h3>
+                <h3 className="text-2xl font-bold mt-2">
+                  BRANDED_COLLECTION_RAJKOT
+                </h3>
                 <p className="text-xs text-gray-500 mt-4 leading-relaxed tracking-tighter">
-                  PLOT_C-12, G_BLOCK, BKC,
+                  Lotus Empire, 206, Raiya Rd, nr. Trinity Tower, opp. Sadbhavna
+                  Medical,
                   <br />
-                  BANDRA_EAST, MH_400051
+                  Kidwai Nagar Society, Rajkot, Gujarat 360005
                 </p>
               </div>
 
@@ -263,13 +266,15 @@ export default function ContactUs() {
                   <span className="text-[9px] text-[#DEB887] font-bold">
                     WA_INTL
                   </span>
-                  <span className="font-bold">+91.98XXX</span>
+                  <span className="font-bold">+91.9227626216</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] text-[#DEB887] font-bold">
                     OFFICE_E
                   </span>
-                  <span className="font-bold">CARE@BRAND.COM</span>
+                  <span className="font-bold">
+                    brandedcollectionrajkot2020@gmail.com
+                  </span>
                 </div>
               </div>
             </div>

@@ -5,9 +5,11 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useUserStore } from "@/store/useUserStore";
+import { useCartStore } from "@/store/useCartStore";
 
 export default function BuyNowCheckoutModal({ item, onClose }) {
   const { user, getUser, setUser } = useUserStore();
+  const { fetchCart } = useCartStore();
 
   // steps: 1 = address, 2 = payment
   const [step, setStep] = useState(1);
@@ -23,6 +25,11 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
     postalCode: "",
     country: "India",
   });
+
+  // Check stock availability
+  const totalStock =
+    item.sizes?.reduce((sum, s) => sum + (s.quantity || 0), 0) || 0;
+  const isOutOfStock = totalStock === 0;
 
   const price = Number(item.price);
   const delivery = price > 999 ? 0 : 69;
@@ -100,34 +107,48 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
     try {
       setLoadingPayment(true);
 
-      const orderRes = await fetch("/api/checkout/create-order", {
+      // ✅ STEP 1: Create reservation (locks stock for 15 minutes)
+      const reservationRes = await fetch("/api/reservation", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total }),
+        body: JSON.stringify({
+          cart: [item],
+          amount: total,
+          address: {
+            ...address,
+            phone: user.number || "",
+          },
+        }),
       });
 
-      const order = await orderRes.json();
-      if (!order.id) throw new Error("Order failed");
+      const reservationData = await reservationRes.json();
 
+      if (!reservationData.success) {
+        toast.error(reservationData.message || "Failed to reserve items");
+        setLoadingPayment(false);
+        return;
+      }
+
+      // ✅ STEP 2: Open Razorpay with reservation ID
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-        amount: order.amount,
+        amount: reservationData.amount * 100, // Convert to paise
         currency: "INR",
-        order_id: order.id,
+        order_id: reservationData.razorpayOrderId,
         name: "Branded Collection",
         description: "Buy Now",
         handler: async function (response) {
+          // ✅ STEP 3: Verify payment with reservation ID
           const verify = await fetch("/api/checkout/verify-payment", {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              userId: user._id,
-              cart: [item], // single product
-              amount: total,
-              address,
+              reservationId: reservationData.reservationId,
             }),
           });
 
@@ -138,15 +159,50 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
             toast.success("Order placed 🎉");
             window.location.href = "/checkout/success";
           } else {
-            toast.error("Payment verification failed");
+            // ✅ Payment failed - cancel reservation and restore stock
+            await fetch(
+              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+            toast.error(data.message || "Payment failed. Stock restored.");
+            await fetchCart(); // Refresh cart if available
+            setLoadingPayment(false);
           }
+        },
+
+        modal: {
+          ondismiss: async function () {
+            // ✅ User closed payment modal - cancel reservation
+            await fetch(
+              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+            toast.error("Payment cancelled. Stock restored.");
+            setLoadingPayment(false);
+          },
         },
       };
 
       new window.Razorpay(options).open();
     } catch (err) {
       console.error(err);
-      toast.error("Payment failed");
+      // ✅ Error occurred - cancel reservation
+      if (reservationData?.reservationId) {
+        await fetch(
+          `/api/reservation/cancel?id=${reservationData.reservationId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
+      }
+      toast.error("Payment failed. Stock restored.");
       setLoadingPayment(false);
     }
   };

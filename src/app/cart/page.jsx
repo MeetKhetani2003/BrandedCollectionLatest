@@ -46,6 +46,14 @@ export default function CartPage() {
       s.src = "https://checkout.razorpay.com/v1/checkout.js";
       document.body.appendChild(s);
     }
+
+    // ✅ AUTO-REFRESH CART EVERY 10 SECONDS TO UPDATE STOCK STATUS
+    const refreshInterval = setInterval(() => {
+      fetchCart();
+    }, 10000); // 10 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   useEffect(() => {
@@ -134,44 +142,147 @@ export default function CartPage() {
     if (!user?.number) {
       return toast.error("Phone number required");
     }
+
+    // ✅ FORCE FRESH CART FETCH to get latest stock status
+    await fetchCart();
+
+    // Wait a moment for state to update
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Re-fetch cart from store to get updated state
+    const updatedCart = useCartStore.getState().cart;
+
+    // ✅ CHECK IF ANY ITEMS ARE OUT OF STOCK
+    const outOfStockItems = updatedCart.filter((item) => item.isOutOfStock);
+    if (outOfStockItems.length > 0) {
+      toast.error(
+        `⏰ ${outOfStockItems[0].name} (${outOfStockItems[0].selectedSize}) is now reserved by another user. Please remove it and try again.`,
+      );
+      return;
+    }
+
     try {
       setLoadingPayment(true);
-      const orderRes = await fetch("/api/checkout/create-order", {
+
+      // ✅ STEP 1: Create reservation (locks stock for 15 minutes)
+      const reservationRes = await fetch("/api/reservation", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total }),
+        body: JSON.stringify({
+          cart,
+          amount: total,
+          address: {
+            ...selected,
+            phone: user.number,
+          },
+        }),
       });
-      const order = await orderRes.json();
+
+      const reservationData = await reservationRes.json();
+
+      if (!reservationData.success) {
+        toast.error(reservationData.message || "Failed to reserve items");
+        setLoadingPayment(false);
+        return;
+      }
+
+      // ✅ STEP 2: Open Razorpay with reservation ID
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-        amount: order.amount,
+        amount: reservationData.amount * 100, // Convert to paise
         currency: "INR",
-        order_id: order.id,
+        order_id: reservationData.razorpayOrderId,
         name: "Branded Collection",
         handler: async function (response) {
+          // ✅ STEP 3: Verify payment with reservation ID
           const verifyRes = await fetch("/api/checkout/verify-payment", {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              userId: user._id,
-              cart,
-              amount: total,
-              address: selected,
+              reservationId: reservationData.reservationId,
             }),
           });
+
           const verifyData = await verifyRes.json();
-          if (verifyData.success) window.location.href = "/checkout/success";
-          else toast.error("Payment verification failed");
+
+          if (verifyData.success) {
+            window.location.href = "/checkout/success";
+          } else {
+            // ✅ Payment failed - cancel reservation and restore stock
+            await fetch(
+              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              {
+                method: "DELETE",
+                credentials: "include",
+              },
+            );
+            toast.error(
+              verifyData.message || "Payment failed. Stock restored.",
+            );
+            await fetchCart(); // Refresh cart to show updated stock
+            setLoadingPayment(false);
+          }
+        },
+        prefill: {
+          name: user.firstName || user.username || "",
+          contact: user.number || "",
+        },
+        modal: {
+          ondismiss: async function () {
+            // ✅ User closed payment modal - cancel reservation
+            try {
+              console.log(
+                "Cancelling reservation:",
+                reservationData.reservationId,
+              );
+              const cancelRes = await fetch(
+                `/api/reservation/cancel?id=${reservationData.reservationId}`,
+                {
+                  method: "DELETE",
+                  credentials: "include",
+                },
+              );
+              const cancelData = await cancelRes.json();
+              console.log("Cancel response:", cancelData);
+
+              // Wait for database to update
+              await new Promise((resolve) => setTimeout(resolve, 500));
+
+              // Force fresh cart fetch
+              await fetchCart();
+              console.log("Cart refreshed after cancellation");
+
+              toast.error("Payment cancelled. Stock restored.");
+            } catch (err) {
+              console.error("Cancel error:", err);
+            }
+            setLoadingPayment(false);
+          },
         },
       };
+
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
+      console.error("Payment error:", err);
+      // ✅ Error occurred - cancel reservation
+      if (reservationData?.reservationId) {
+        await fetch(
+          `/api/reservation/cancel?id=${reservationData.reservationId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
+      }
+      toast.error("Payment failed. Stock restored. Please try again.");
+      await fetchCart(); // ✅ Refresh cart
       setLoadingPayment(false);
-      toast.error("Payment failed");
     }
   };
   const savePhoneNumber = async () => {
@@ -317,7 +428,9 @@ export default function CartPage() {
                     {cart.map((item) => (
                       <div
                         key={`${item._id}-${item.selectedSize}`}
-                        className="flex items-center gap-4 p-3 rounded-md border"
+                        className={`flex items-center gap-4 p-3 rounded-md border ${
+                          item.isOutOfStock ? "opacity-60 bg-gray-50" : ""
+                        }`}
                       >
                         <div className="w-28 h-28 relative overflow-hidden rounded-md bg-[#f4efe8]">
                           <Image
@@ -354,6 +467,14 @@ export default function CartPage() {
                               <Trash2 size={18} />
                             </button>
                           </div>
+
+                          {/* ✅ OUT OF STOCK BADGE */}
+                          {item.isOutOfStock && (
+                            <div className="mt-2 bg-red-100 border border-red-300 text-red-700 px-3 py-1 rounded text-xs font-semibold inline-block">
+                              🔴 Out of Stock - Reserved by another user
+                            </div>
+                          )}
+
                           <div className="mt-3 flex items-center gap-3">
                             <button
                               onClick={() =>
@@ -369,14 +490,34 @@ export default function CartPage() {
                             </button>
                             <div className="px-3">{item.qty}</div>
                             <button
-                              onClick={() =>
+                              onClick={async () => {
+                                // ✅ STOCK CHECK BEFORE INCREMENTING
+                                if (item.isOutOfStock) {
+                                  toast.error(
+                                    "This product has no more stock available",
+                                  );
+                                  return;
+                                }
+
+                                // Check if incrementing would exceed available stock
+                                if (item.qty >= item.availableQuantity) {
+                                  toast.error(
+                                    `Only ${item.availableQuantity} item(s) available in stock`,
+                                  );
+                                  return;
+                                }
+
                                 updateQty(
                                   item._id,
                                   item.selectedSize,
                                   item.qty + 1,
-                                )
-                              }
-                              className="px-2 py-1 border rounded"
+                                );
+                              }}
+                              className={`px-2 py-1 border rounded ${
+                                item.isOutOfStock
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
                             >
                               <Plus size={14} />
                             </button>
@@ -510,10 +651,20 @@ export default function CartPage() {
                   </button>
                   <button
                     onClick={handlePayment}
-                    disabled={loadingPayment}
-                    className={`px-6 py-2 rounded ${PALETTE.ACCENT_BG}`}
+                    disabled={
+                      loadingPayment || cart.some((item) => item.isOutOfStock)
+                    }
+                    className={`px-6 py-2 rounded ${
+                      loadingPayment || cart.some((item) => item.isOutOfStock)
+                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                        : PALETTE.ACCENT_BG
+                    }`}
                   >
-                    {loadingPayment ? "Processing..." : `Pay ₹${total}`}
+                    {loadingPayment
+                      ? "Processing..."
+                      : cart.some((item) => item.isOutOfStock)
+                        ? "Items Out of Stock"
+                        : `Pay ₹${total}`}
                   </button>
                 </div>
               </div>
@@ -578,10 +729,20 @@ export default function CartPage() {
                 {step === 3 && (
                   <button
                     onClick={handlePayment}
-                    disabled={loadingPayment}
-                    className={`w-full px-4 py-2 rounded ${PALETTE.ACCENT_BG}`}
+                    disabled={
+                      loadingPayment || cart.some((item) => item.isOutOfStock)
+                    }
+                    className={`w-full px-4 py-2 rounded ${
+                      loadingPayment || cart.some((item) => item.isOutOfStock)
+                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                        : PALETTE.ACCENT_BG
+                    }`}
                   >
-                    {loadingPayment ? "Processing..." : `Pay ₹${total}`}
+                    {loadingPayment
+                      ? "Processing..."
+                      : cart.some((item) => item.isOutOfStock)
+                        ? "Items Out of Stock"
+                        : `Pay ₹${total}`}
                   </button>
                 )}
               </div>

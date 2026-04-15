@@ -21,7 +21,7 @@ export async function POST(req) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "Account not found." },
+        { message: "No account found. Kindly sign up first." },
         { status: 404 },
       );
     }

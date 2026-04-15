@@ -1,11 +1,17 @@
-import AdminSidebar from "@/components/admin/SideBar";
+"use client";
+
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function AdminLayout({ children }) {
-  return (
-    <div className="flex min-h-screen bg-[#fdf7f2] text-[#4a2e1f]">
-      <AdminSidebar />
+  const pathname = usePathname();
+  const router = useRouter();
 
-      <main className="flex-1 p-6">{children}</main>
-    </div>
-  );
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      router.replace(pathname.replace("/admin", "/operator"));
+    }
+  }, [pathname, router]);
+
+  return <>{children}</>;
 }

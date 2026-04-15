@@ -11,7 +11,7 @@ export const useCartStore = create((set, get) => ({
 
     const data = await res.json();
 
-    // ✅ NORMALIZE SHAPE
+    // ✅ NORMALIZE SHAPE (including stock info)
     const normalized = data.map((item) => ({
       _id: item.productId,
       name: item.name,
@@ -19,6 +19,11 @@ export const useCartStore = create((set, get) => ({
       imageFront: item.image,
       selectedSize: item.size || "General",
       qty: item.qty,
+      // ✅ Stock information
+      stockQuantity: item.stockQuantity || 0,
+      reservedQuantity: item.reservedQuantity || 0,
+      availableQuantity: item.availableQuantity || 0,
+      isOutOfStock: item.isOutOfStock || false,
     }));
 
     set({ cart: normalized });
