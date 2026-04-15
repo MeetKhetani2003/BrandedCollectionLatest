@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const PUBLIC_HTML =
-  "/home/u748179017/domains/darkorange-flamingo-321246.hostingersite.com/public_html";
+  "/home/u748179017/domains/brandedcollections.in/public_html";
 const BASE_UPLOAD_DIR = path.join(PUBLIC_HTML, "uploads", "products");
 
 function ensureDir(dir) {
