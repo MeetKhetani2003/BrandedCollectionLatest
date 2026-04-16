@@ -293,11 +293,7 @@ export default function CheckoutPage() {
                   >
                     <div className="flex items-center gap-4">
                       <Image
-                        src={
-                          item.imageFrontPath?.startsWith("/api")
-                            ? item.imageFrontPath
-                            : `/api/images/${item.imageFrontPath}`
-                        }
+                        src={`https://brandedcollections.in${item.imageFrontPath}`}
                         width={70}
                         height={70}
                         alt=""

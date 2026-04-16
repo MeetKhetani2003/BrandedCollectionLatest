@@ -431,11 +431,7 @@ export default function CartPage() {
                       >
                         <div className="w-28 h-28 relative overflow-hidden rounded-md bg-[#f4efe8]">
                           <Image
-                            src={
-                              item.imageFrontPath?.startsWith("/api")
-                                ? item.imageFrontPath
-                                : `/api/images/${item.imageFrontPath}`
-                            }
+                            src={`https://brandedcollections.in${item.imageFrontPath}`}
                             alt={item.name}
                             width={112}
                             height={112}
