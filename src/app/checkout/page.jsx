@@ -41,7 +41,7 @@ export default function CheckoutPage() {
     postalCode: "",
     country: "India",
   });
-
+  const URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   useEffect(() => {
     fetchCart();
     getUser();
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
           } else {
             // ✅ Payment failed - cancel reservation and restore stock
             await fetch(
-              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              `/api/reservation?id=${reservationData.reservationId}`,
               {
                 method: "DELETE",
                 credentials: "include",
@@ -221,7 +221,7 @@ export default function CheckoutPage() {
           ondismiss: async function () {
             // ✅ User closed payment modal - cancel reservation
             await fetch(
-              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              `/api/reservation?id=${reservationData.reservationId}`,
               {
                 method: "DELETE",
                 credentials: "include",
@@ -283,55 +283,66 @@ export default function CheckoutPage() {
             <h2 className={`text-2xl font-bold ${PALETTE.TEXT}`}>
               Review Your Cart
             </h2>
-            {cart.map((item) => (
-              <div
-                key={item.productId + item.size}
-                className="border bg-white p-4 rounded-xl flex justify-between items-center shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <Image
-                    src={item.image}
-                    width={70}
-                    height={70}
-                    alt=""
-                    className="rounded-lg"
-                  />
-                  <div>
-                    <p className={`font-semibold ${PALETTE.TEXT}`}>
-                      {item.name}
-                    </p>
-                    <p className="text-xs opacity-60">
-                      Size: {item.size} | Price: ₹{item.price}
-                    </p>
+            {cart.map(
+              (item) => (
+                console.log(item),
+                (
+                  <div
+                    key={item._id + item.selectedSize}
+                    className="border bg-white p-4 rounded-xl flex justify-between items-center shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Image
+                        src={
+                          item.imageFrontPath?.startsWith("/api")
+                            ? item.imageFrontPath
+                            : `/api/images/${item.imageFrontPath}`
+                        }
+                        width={70}
+                        height={70}
+                        alt=""
+                        className="rounded-lg object-cover"
+                      />
+                      <div>
+                        <p className={`font-semibold ${PALETTE.TEXT}`}>
+                          {item.name}
+                        </p>
+                        <p className="text-xs opacity-60">
+                          Size: {item.selectedSize} | Price: ₹{item.price}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3 bg-gray-50 px-3 py-1 rounded-full border">
+                        <Minus
+                          className="w-4 cursor-pointer"
+                          onClick={() =>
+                            updateQty(
+                              item._id,
+                              item.selectedSize,
+                              Math.max(1, item.qty - 1),
+                            )
+                          }
+                        />
+                        <span className="font-bold">{item.qty}</span>
+                        <Plus
+                          className="w-4 cursor-pointer"
+                          onClick={() =>
+                            updateQty(item._id, item.selectedSize, item.qty + 1)
+                          }
+                        />
+                      </div>
+                      <Trash2
+                        className="text-red-500 w-5 cursor-pointer"
+                        onClick={() =>
+                          removeFromCart(item._id, item.selectedSize)
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 bg-gray-50 px-3 py-1 rounded-full border">
-                    <Minus
-                      className="w-4 cursor-pointer"
-                      onClick={() =>
-                        updateQty(
-                          item.productId,
-                          item.size,
-                          Math.max(1, item.qty - 1),
-                        )
-                      }
-                    />
-                    <span className="font-bold">{item.qty}</span>
-                    <Plus
-                      className="w-4 cursor-pointer"
-                      onClick={() =>
-                        updateQty(item.productId, item.size, item.qty + 1)
-                      }
-                    />
-                  </div>
-                  <Trash2
-                    className="text-red-500 w-5 cursor-pointer"
-                    onClick={() => removeFromCart(item.productId, item.size)}
-                  />
-                </div>
-              </div>
-            ))}
+                )
+              ),
+            )}
             <button
               onClick={nextStep}
               className={`${PALETTE.ACCENT} w-full py-4 rounded-xl font-bold mt-4 flex items-center justify-center gap-2`}

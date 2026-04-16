@@ -215,7 +215,7 @@ export default function CartPage() {
           } else {
             // ✅ Payment failed - cancel reservation and restore stock
             await fetch(
-              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              `/api/reservation?id=${reservationData.reservationId}`,
               {
                 method: "DELETE",
                 credentials: "include",
@@ -241,7 +241,7 @@ export default function CartPage() {
                 reservationData.reservationId,
               );
               const cancelRes = await fetch(
-                `/api/reservation/cancel?id=${reservationData.reservationId}`,
+                `/api/reservation?id=${reservationData.reservationId}`,
                 {
                   method: "DELETE",
                   credentials: "include",
@@ -272,13 +272,10 @@ export default function CartPage() {
       console.error("Payment error:", err);
       // ✅ Error occurred - cancel reservation
       if (reservationData?.reservationId) {
-        await fetch(
-          `/api/reservation/cancel?id=${reservationData.reservationId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
+        await fetch(`/api/reservation?id=${reservationData.reservationId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
       }
       toast.error("Payment failed. Stock restored. Please try again.");
       await fetchCart(); // ✅ Refresh cart
@@ -435,9 +432,9 @@ export default function CartPage() {
                         <div className="w-28 h-28 relative overflow-hidden rounded-md bg-[#f4efe8]">
                           <Image
                             src={
-                              item.imageFront?.startsWith("/api")
-                                ? item.imageFront
-                                : `/api/images/${item.imageFront}`
+                              item.imageFrontPath?.startsWith("/api")
+                                ? item.imageFrontPath
+                                : `/api/images/${item.imageFrontPath}`
                             }
                             alt={item.name}
                             width={112}

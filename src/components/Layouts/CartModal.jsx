@@ -64,11 +64,15 @@ export default function CartModal({ close }) {
 
           {cart.map((item) => (
             <div
-              key={`${item.productId}-${item.size}`}
+              key={`${item._id}-${item.selectedSize}`}
               className="flex items-center gap-4 bg-white p-3 rounded-lg mb-3 shadow hover:scale-[1.02] transition-all"
             >
               <Image
-                src={item.image}
+                src={
+                  item.imageFront?.startsWith("/api")
+                    ? item.imageFront
+                    : `/api/images/${item.imageFront}`
+                }
                 width={70}
                 height={90}
                 className="rounded-md object-cover"
@@ -79,15 +83,15 @@ export default function CartModal({ close }) {
                 <p className="font-semibold text-[#654321] text-sm line-clamp-2">
                   {item.name}
                 </p>
-                <p className="text-xs text-gray-600">Size: {item.size}</p>
+                <p className="text-xs text-gray-600">Size: {item.selectedSize}</p>
 
                 {/* Quantity */}
                 <div className="flex items-center gap-3 mt-2">
                   <button
                     onClick={() =>
                       updateQty(
-                        item.productId,
-                        item.size,
+                        item._id,
+                        item.selectedSize,
                         Math.max(1, item.qty - 1)
                       )
                     }
@@ -100,7 +104,7 @@ export default function CartModal({ close }) {
 
                   <button
                     onClick={() =>
-                      updateQty(item.productId, item.size, item.qty + 1)
+                      updateQty(item._id, item.selectedSize, item.qty + 1)
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition"
                   >
@@ -111,7 +115,7 @@ export default function CartModal({ close }) {
 
               {/* Remove */}
               <button
-                onClick={() => removeFromCart(item.productId, item.size)}
+                onClick={() => removeFromCart(item._id, item.selectedSize)}
                 className="hover:scale-110 transition"
               >
                 <Trash2 size={20} className="text-red-500" />

@@ -161,7 +161,7 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
           } else {
             // ✅ Payment failed - cancel reservation and restore stock
             await fetch(
-              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              `/api/reservation?id=${reservationData.reservationId}`,
               {
                 method: "DELETE",
                 credentials: "include",
@@ -177,7 +177,7 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
           ondismiss: async function () {
             // ✅ User closed payment modal - cancel reservation
             await fetch(
-              `/api/reservation/cancel?id=${reservationData.reservationId}`,
+              `/api/reservation?id=${reservationData.reservationId}`,
               {
                 method: "DELETE",
                 credentials: "include",
@@ -195,7 +195,7 @@ export default function BuyNowCheckoutModal({ item, onClose }) {
       // ✅ Error occurred - cancel reservation
       if (reservationData?.reservationId) {
         await fetch(
-          `/api/reservation/cancel?id=${reservationData.reservationId}`,
+          `/api/reservation?id=${reservationData.reservationId}`,
           {
             method: "DELETE",
             credentials: "include",
