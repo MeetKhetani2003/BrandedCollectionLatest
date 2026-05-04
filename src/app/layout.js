@@ -3,22 +3,34 @@ import "./globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "react-hot-toast";
 
+import { FaWhatsapp } from "react-icons/fa6";
 import ClientBridge from "./ClientBridge";
+import Link from "next/link";
 
 export const metadata = {
   metadataBase: new URL("https://brandedcollections.in"),
   title: {
     default: "Branded Collections Rajkot | Premium Fits, Everyday Comfort",
-    template: "%s | Branded Collections Rajkot"
+    template: "%s | Branded Collections Rajkot",
   },
-  description: "Discover premium shirts, tees, and denim crafted for comfort and style at Branded Collections Rajkot. Your destination for everyday fashion.",
-  keywords: ["Branded Collections", "Rajkot Clothing", "Premium Menswear", "Shirts", "Tees", "Denim", "Rajkot Fashion"],
+  description:
+    "Discover premium shirts, tees, and denim crafted for comfort and style at Branded Collections Rajkot. Your destination for everyday fashion.",
+  keywords: [
+    "Branded Collections",
+    "Rajkot Clothing",
+    "Premium Menswear",
+    "Shirts",
+    "Tees",
+    "Denim",
+    "Rajkot Fashion",
+  ],
   authors: [{ name: "Branded Collections Rajkot" }],
   creator: "Branded Collections Rajkot",
   publisher: "Branded Collections Rajkot",
   openGraph: {
     title: "Branded Collections Rajkot",
-    description: "Premium fits, everyday comfort. Discover our range of shirts, tees, and denim.",
+    description:
+      "Premium fits, everyday comfort. Discover our range of shirts, tees, and denim.",
     url: "https://brandedcollections.in",
     siteName: "Branded Collections Rajkot",
     locale: "en_IN",
@@ -35,7 +47,8 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Branded Collections Rajkot",
-    description: "Premium fits, everyday comfort. Discover our range of shirts, tees, and denim.",
+    description:
+      "Premium fits, everyday comfort. Discover our range of shirts, tees, and denim.",
     creator: "@branded_collection_rajkot",
     images: ["/assets/logo.png"],
   },
@@ -78,6 +91,13 @@ export default function RootLayout({ children }) {
             },
           }}
         />
+        <Link
+          href="https://wa.me/9227626216"
+          target="_blank"
+          className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-full shadow-lg"
+        >
+          <FaWhatsapp />
+        </Link>
       </body>
     </html>
   );
