@@ -100,7 +100,7 @@ export async function POST(req) {
       items: reservation.items,
       paymentId: razorpay_payment_id,
       amount: reservation.amount,
-      shippingAddress: reservation.shippingAddress,
+      deliveryAddress: reservation.deliveryAddress,
       status: "paid",
       orderStatus: "orderPlaced",
     });

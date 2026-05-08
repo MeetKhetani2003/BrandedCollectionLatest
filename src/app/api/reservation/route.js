@@ -59,7 +59,7 @@ export async function POST(req) {
 
       if (result.modifiedCount === 0) {
         // Stock deduction failed - another user got it first
-        
+
         // Restore stock for items already processed in this request
         if (reservationItems.length > 0) {
           await restoreStock(reservationItems);
@@ -111,7 +111,7 @@ export async function POST(req) {
       razorpayOrderId: razorpayOrder.id,
       amount: amount,
       expiresAt,
-      shippingAddress: address,
+      deliveryAddress: address,
       status: "pending",
     });
 

@@ -4,6 +4,7 @@ import { sendMail } from "@/utils/sendMail";
 
 export async function POST(req) {
   const { orderData, user } = await req.json();
+  console.log(orderData);
 
   const order = await Order.create(orderData);
 

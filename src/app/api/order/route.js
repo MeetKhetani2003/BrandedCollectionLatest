@@ -95,10 +95,12 @@ export async function POST(req) {
       customerName,
       customerEmail,
       items,
+      deliveryAddress,
       amount,
       paymentId,
       status,
     } = body;
+    console.log(deliveryAddress);
 
     if (!items?.length || !amount) {
       return NextResponse.json(
@@ -187,6 +189,7 @@ export async function POST(req) {
       customerName: customerName || null,
       customerEmail: customerEmail || null,
       items,
+      deliveryAddress: deliveryAddress || null,
       amount,
       paymentId: paymentId || `offline_${Date.now()}`,
       status: status || "paid",

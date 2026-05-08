@@ -324,7 +324,25 @@ export default function AdminOrders() {
                         {order.user?.email || order.customerEmail || "—"}
                       </p>
                     </div>
+                    <div className="text-sm space-y-1 border rounded-lg bg-white p-4">
+                      <p className="font-semibold text-[#4a2e1f]">
+                        Delivery Address
+                      </p>
 
+                      <p>{order.deliveryAddress?.street}</p>
+
+                      <p>
+                        {order.deliveryAddress?.city},{" "}
+                        {order.deliveryAddress?.state}
+                      </p>
+
+                      <p>
+                        {order.deliveryAddress?.postalCode},{" "}
+                        {order.deliveryAddress?.country}
+                      </p>
+
+                      <p>Phone: {order.deliveryAddress?.phone}</p>
+                    </div>
                     {/* ITEMS */}
                     <div>
                       <p className="font-semibold mb-2">Items</p>

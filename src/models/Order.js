@@ -1,5 +1,19 @@
 import mongoose from "mongoose";
 
+const addressSchema = new mongoose.Schema(
+  {
+    street: String,
+    city: String,
+    state: String,
+    postalCode: String,
+    country: {
+      type: String,
+      default: "India",
+    },
+    phone: String,
+  },
+  { _id: false },
+);
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -27,7 +41,7 @@ const orderSchema = new mongoose.Schema(
       lastFetchedAt: Date,
       raw: mongoose.Schema.Types.Mixed, // full API response
     },
-
+    deliveryAddress: addressSchema,
     customerEmail: {
       type: String,
       trim: true,

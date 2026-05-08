@@ -58,7 +58,7 @@ export default function AdminOrders() {
 
       {/* ORDERS LIST */}
       {tab === TABS.ORDERS && (
-        <div className="bg-white border rounded-xl overflow-hidden">
+        <div className="bg-white border rounded-xl overflow-visible">
           <div className="grid grid-cols-[1.2fr_1.5fr_1fr_2fr_1fr_0.7fr_0.7fr] px-6 py-3 bg-gray-100 text-sm font-semibold text-gray-700">
             <div>Order ID</div>
             <div>User</div>
@@ -324,7 +324,25 @@ export default function AdminOrders() {
                         {order.user?.email || order.customerEmail || "—"}
                       </p>
                     </div>
+                    <div className="text-sm space-y-1 border rounded-lg bg-white p-4">
+                      <p className="font-semibold text-[#4a2e1f]">
+                        Delivery Address
+                      </p>
 
+                      <p>{order.deliveryAddress?.street}</p>
+
+                      <p>
+                        {order.deliveryAddress?.city},{" "}
+                        {order.deliveryAddress?.state}
+                      </p>
+
+                      <p>
+                        {order.deliveryAddress?.postalCode},{" "}
+                        {order.deliveryAddress?.country}
+                      </p>
+
+                      <p>Phone: {order.deliveryAddress?.phone}</p>
+                    </div>
                     {/* ITEMS */}
                     <div>
                       <p className="font-semibold mb-2">Items</p>

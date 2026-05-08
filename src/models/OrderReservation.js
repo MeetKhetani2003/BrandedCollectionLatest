@@ -51,7 +51,7 @@ const OrderReservationSchema = new Schema(
     },
 
     // Shipping address
-    shippingAddress: {
+    deliveryAddress: {
       street: String,
       city: String,
       state: String,
@@ -62,13 +62,12 @@ const OrderReservationSchema = new Schema(
   },
   {
     timestamps: true, // createdAt, updatedAt
-  }
+  },
 );
 
 // Index for fast queries
 OrderReservationSchema.index({ status: 1, expiresAt: 1 });
 OrderReservationSchema.index({ user: 1, status: 1 });
 
-export default
-  mongoose.models.OrderReservation ||
+export default mongoose.models.OrderReservation ||
   mongoose.model("OrderReservation", OrderReservationSchema);
